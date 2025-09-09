@@ -138,7 +138,6 @@
         const submitButton = document.querySelector('.submit-btn');
         const uploadForm = document.getElementById('upload-form');
         
-        // --- ELEMENTOS DO LOADING CAPTURADOS ---
         const loadingOverlay = document.getElementById('loading');
         const formContent = document.getElementById('form-content');
 
@@ -152,13 +151,28 @@
             }
         });
 
-        // --- FUNÇÃO PARA MOSTRAR O LOADING ---
+        // Quando o formulário for enviado...
         uploadForm.addEventListener('submit', () => {
-            // Esconde o conteúdo do formulário
+            // 1. Mostra o loading e esconde o formulário
             formContent.style.display = 'none';
-            // Mostra o loading
             loadingOverlay.classList.add('visible');
+
+            // --- NOVA PARTE ADICIONADA ---
+            // 2. Agenda uma "limpeza" da tela para depois de alguns segundos
+            setTimeout(() => {
+                // Esconde o loading
+                loadingOverlay.classList.remove('visible');
+                // Mostra o formulário novamente
+                formContent.style.display = 'block';
+                // Limpa o nome do arquivo selecionado
+                fileNameDisplay.textContent = 'Nenhum arquivo selecionado';
+                // Desabilita o botão de envio
+                submitButton.disabled = true;
+                // Reseta o campo de input de arquivo
+                uploadForm.reset();
+            }, 8000); // <-- A tela será resetada após 8 segundos (8000 milissegundos)
         });
     </script>
 </body>
 </html>
+

@@ -42,7 +42,7 @@
             align-items: center;
             min-height: 100vh;
             margin: 0;
-            padding: 20px 0; /* Adicionado para melhor visualização em telas menores */
+            padding: 20px 0;
             background-color: var(--bg-color);
             color: var(--text-color);
             transition: background-color 0.3s, color 0.3s;
@@ -57,7 +57,7 @@
             max-width: 550px;
             width: 90%;
             position: relative;
-            overflow: hidden; /* Garante que o overlay não vaze */
+            overflow: hidden;
             transition: background-color 0.3s;
         }
 
@@ -66,7 +66,6 @@
             margin-top: 0;
         }
         
-        /* Estilos das instruções */
         .instructions {
             text-align: left;
             margin-top: 20px;
@@ -94,7 +93,6 @@
             opacity: 0.8;
         }
 
-        /* Estilos do formulário */
         input[type="file"] {
             display: none;
         }
@@ -114,7 +112,7 @@
         #file-name {
             margin-top: 15px;
             font-style: italic;
-            min-height: 20px; /* Garante espaço mesmo quando vazio */
+            min-height: 20px;
         }
         .submit-btn {
             background-color: var(--primary-color);
@@ -133,25 +131,26 @@
             cursor: not-allowed;
         }
         
-        /* Estilos do Loading */
+        /* --- ESTILOS DO LOADING CORRIGIDOS --- */
         .loading-overlay {
             position: absolute;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background-color: rgba(var(--container-bg-color-rgb, 255, 255, 255), 0.9);
-            display: flex;
+            background-color: var(--container-bg-color);
+            /* A MUDANÇA PRINCIPAL: Começa totalmente escondido */
+            display: none; 
             flex-direction: column;
             justify-content: center;
             align-items: center;
             border-radius: 12px;
-            visibility: hidden;
             opacity: 0;
-            transition: opacity 0.3s, visibility 0.3s;
+            transition: opacity 0.3s;
         }
         .loading-overlay.visible {
-            visibility: visible;
+            /* Fica visível quando a classe .visible é adicionada */
+            display: flex;
             opacity: 1;
         }
         .spinner {
@@ -172,7 +171,6 @@
             100% { transform: rotate(360deg); }
         }
 
-        /* Media Query para telas menores */
         @media (max-width: 600px) {
             .container {
                 padding: 25px;
@@ -205,8 +203,9 @@
             </div>
 
             <form id="upload-form" action="SEU_URL_DO_WEBHOOK_AQUI" method="POST" enctype="multipart/form-data">
-                <label for="audioFile" class="upload-label">Clique para escolher o arquivo de áudio</label>
-                <input type="file" id="audioFile" name="audioFile" accept="audio/*" required>
+                <label for="audioFile" class="upload-label">Escolher Arquivo ou Gravar Áudio</label>
+                <input type="file" id="audioFile" name="audioFile" accept="audio/*" capture required>
+                
                 <div id="file-name">Nenhum arquivo selecionado</div>
                 <br>
                 <button type="submit" class="submit-btn" disabled>Gerar Relatório</button>
@@ -237,33 +236,66 @@
             }
         });
 
-        // Quando o formulário for enviado...
-        uploadForm.addEventListener('submit', () => {
+        // --- LÓGICA DO LOADING/RESET AJUSTADA ---
+        uploadForm.addEventListener('submit', (e) => {
+            e.preventDefault(); // Previne o envio padrão para controlarmos o processo
+            
             // 1. Mostra o loading e esconde o formulário
-            loadingText.innerHTML = 'Analisando sua voz...<br>Isso pode levar alguns instantes.';
-            spinner.style.display = 'block';
             formContent.style.display = 'none';
             loadingOverlay.classList.add('visible');
 
-            // 2. Agenda uma "limpeza" da tela
-            setTimeout(() => {
-                // Muda o texto para "concluído"
-                loadingText.innerHTML = 'Concluído!<br>Seu relatório foi enviado para download.';
+            // 2. Cria um FormData e envia via fetch (mais controle sobre o processo)
+            const formData = new FormData(uploadForm);
+            fetch(uploadForm.action, {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Falha no envio. Tente novamente.');
+                }
+                return response.blob(); // Espera um arquivo como resposta
+            })
+            .then(blob => { // Quando o arquivo de resposta (PDF) chega
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.style.display = 'none';
+                a.href = url;
+                // Extrai um nome de arquivo ou usa um padrão
+                a.download = 'relatorio-vocal.pdf'; 
+                document.body.appendChild(a);
+                a.click();
+                window.URL.revokeObjectURL(url);
                 
-                // Esconde o spinner
-                const spinner = document.querySelector('.spinner');
-                spinner.style.display = 'none';
-
-                // Reseta o formulário após mais 4 segundos
+                // Avisa que o download começou e reseta o form
+                loadingText.innerHTML = 'Concluído!<br>Seu relatório foi baixado.';
+                document.querySelector('.spinner').style.display = 'none';
+                
                 setTimeout(() => {
                     loadingOverlay.classList.remove('visible');
                     formContent.style.display = 'block';
                     fileNameDisplay.textContent = 'Nenhum arquivo selecionado';
                     submitButton.disabled = true;
                     uploadForm.reset();
+                    document.querySelector('.spinner').style.display = 'block';
                 }, 4000);
 
-            }, 8000); // <-- Tempo total estimado para o processo
+            })
+            .catch(error => {
+                console.error('Erro:', error);
+                // Em caso de erro, avisa e reseta o form
+                loadingText.innerHTML = `Ocorreu um erro.<br>${error.message}`;
+                document.querySelector('.spinner').style.display = 'none';
+
+                setTimeout(() => {
+                    loadingOverlay.classList.remove('visible');
+                    formContent.style.display = 'block';
+                    fileNameDisplay.textContent = 'Nenhum arquivo selecionado';
+                    submitButton.disabled = true;
+                    uploadForm.reset();
+                    document.querySelector('.spinner').style.display = 'block';
+                }, 5000);
+            });
         });
     </script>
 </body>

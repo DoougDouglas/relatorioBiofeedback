@@ -6,6 +6,32 @@
     <meta name="robots" content="noindex, nofollow">
     <title>Relatório de Biofeedback Vocal</title>
     <style>
+        /* Adicione este CSS dentro da sua tag <style> */
+        .instructions {
+            text-align: left;
+            margin-bottom: 30px;
+            border-top: 1px solid #eee;
+            border-bottom: 1px solid #eee;
+            padding: 20px 0;
+        }
+        .instructions h2 {
+            margin-top: 0;
+            font-size: 18px;
+            color: #1a252f;
+        }
+        .instructions ol {
+            padding-left: 20px;
+            color: #5a6978;
+        }
+        .instructions li {
+            margin-bottom: 10px;
+        }
+        .tips {
+            font-size: 14px;
+            text-align: center;
+            margin-top: 20px;
+            color: #5a6978;
+        }
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
             display: flex;
@@ -121,7 +147,24 @@
 
         <div id="form-content">
             <h1>Relatório de Biofeedback Vocal</h1>
-            <p>Faça o upload do seu arquivo de áudio abaixo para iniciar o processamento.</p>
+            <div class="instructions">
+            <h2>Como Gravar para a Melhor Análise:</h2>
+            <ol>
+                <li>
+                    <strong> encontre um lugar silencioso</strong> e use um fone com microfone ou um microfone externo para minimizar ruídos de fundo.
+                </li>
+                <li>
+                    <strong>Escolha uma vogal</strong> (como "Ah" ou "É") e uma <strong>nota musical</strong> que seja confortável para você, sem forçar a voz.
+                </li>
+                <li>
+                    <strong>Grave a nota por 3 a 5 segundos.</strong> Tente mantê-la o mais <strong>estável e contínua</strong> possível, sem variações de volume ou afinação.
+                </li>
+                 <li>
+                    <strong>Salve o arquivo</strong> (formatos comuns como MP3, M4A ou WAV são ideais) e envie abaixo.
+                </li>
+            </ol>
+            <p class="tips"><strong>Dica:</strong> Posicione o microfone a cerca de 15 cm da boca e ligeiramente de lado para evitar sons de "sopro".</p>
+        </div>
 
             <form id="upload-form" action="https://n8n.squirrelstore.com.br/webhook/33d9de3a-2f0e-440d-b34e-c02d08c63028" method="POST" enctype="multipart/form-data">
                 <label for="audioFile" class="upload-label">Clique para escolher o arquivo de áudio</label>
@@ -176,5 +219,6 @@
     </script>
 </body>
 </html>
+
 
 

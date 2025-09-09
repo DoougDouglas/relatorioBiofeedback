@@ -1,34 +1,88 @@
 <!DOCTYPE html>
-
 <html lang="pt-br">
-
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex, nofollow">
+    <title>Análise Vocal IA</title>
+    <style>
+        /* Define as variáveis de cor para o tema claro e escuro */
+        :root {
+            --bg-color: #f4f7f6;
+            --container-bg-color: #ffffff;
+            --text-color: #5a6978;
+            --heading-color: #1a252f;
+            --primary-color: #007bff;
+            --primary-color-disabled: #a0c9f5;
+            --border-color: #eee;
+            --upload-bg-color: #e8eeef;
+            --upload-border-color: #cddae0;
+            --upload-text-color: #3b4d5a;
+        }
 
-    <meta charset="UTF-8">
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --bg-color: #121212;
+                --container-bg-color: #1e1e1e;
+                --text-color: #a9b3be;
+                --heading-color: #e1e3e6;
+                --primary-color: #2a9dff;
+                --primary-color-disabled: #1c3d5e;
+                --border-color: #333;
+                --upload-bg-color: #2a2d30;
+                --upload-border-color: #4a4d50;
+                --upload-text-color: #c1c3c6;
+            }
+        }
 
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px 0; /* Adicionado para melhor visualização em telas menores */
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            transition: background-color 0.3s, color 0.3s;
+        }
 
-    <meta name="robots" content="noindex, nofollow">
+        .container {
+            background-color: var(--container-bg-color);
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            max-width: 550px;
+            width: 90%;
+            position: relative;
+            overflow: hidden; /* Garante que o overlay não vaze */
+            transition: background-color 0.3s;
+        }
 
-    <title>Relatório de Biofeedback Vocal</title>
-
-    <style>
-/* Adicione este CSS dentro da sua tag <style> */
+        h1 {
+            color: var(--heading-color);
+            margin-top: 0;
+        }
+        
+        /* Estilos das instruções */
         .instructions {
             text-align: left;
+            margin-top: 20px;
             margin-bottom: 30px;
-            border-top: 1px solid #eee;
-            border-bottom: 1px solid #eee;
-            padding: 20px 0;
+            border-top: 1px solid var(--border-color);
+            border-bottom: 1px solid var(--border-color);
+            padding: 20px 5px;
         }
         .instructions h2 {
             margin-top: 0;
             font-size: 18px;
-            color: #1a252f;
+            color: var(--heading-color);
         }
         .instructions ol {
             padding-left: 20px;
-            color: #5a6978;
+            line-height: 1.6;
         }
         .instructions li {
             margin-bottom: 10px;
@@ -37,361 +91,180 @@
             font-size: 14px;
             text-align: center;
             margin-top: 20px;
-            color: #5a6978;
+            opacity: 0.8;
         }
-        body {
 
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-
-            display: flex;
-
-            justify-content: center;
-
-            align-items: center;
-
-            height: 100vh;
-
-            margin: 0;
-
-            background-color: #f4f7f6;
-
-            color: #333;
-
-        }
-
-        .container {
-
-            background-color: white;
-
-            padding: 40px;
-
-            border-radius: 8px;
-
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-
-            text-align: center;
-
-            max-width: 500px;
-
-            width: 90%;
-
-            position: relative; /* Adicionado para posicionar o loading */
-
-        }
-
-        h1 {
-
-            color: #1a252f;
-
-        }
-
-        p {
-
-            color: #5a6978;
-
-            margin-bottom: 30px;
-
-        }
-
-        input[type="file"] {
-
-            display: none;
-
-        }
-
-        .upload-label {
-
-            display: inline-block;
-
-            padding: 12px 20px;
-
-            background-color: #e8eeef;
-
-            color: #3b4d5a;
-
-            border: 2px dashed #cddae0;
-
-            border-radius: 5px;
-
-            cursor: pointer;
-
-            transition: background-color 0.3s;
-
-        }
-
-        .upload-label:hover {
-
-            background-color: #dbe5e7;
-
-        }
-
-        #file-name {
-
-            margin-top: 15px;
-
-            font-style: italic;
-
-            color: #5a6978;
-
-        }
-
-        .submit-btn {
-
-            background-color: #007bff;
-
-            color: white;
-
-            border: none;
-
-            padding: 15px 30px;
-
-            border-radius: 5px;
-
-            font-size: 16px;
-
-            font-weight: bold;
-
-            cursor: pointer;
-
-            margin-top: 20px;
-
-            transition: background-color 0.3s;
-
-        }
-
-        .submit-btn:disabled {
-
-            background-color: #a0c9f5;
-
-            cursor: not-allowed;
-
-        }
-
-        /* --- ESTILOS DO LOADING ADICIONADOS --- */
-
-        .loading-overlay {
-
-            position: absolute;
-
-            top: 0;
-
-            left: 0;
-
-            width: 100%;
-
-            height: 100%;
-
-            background-color: rgba(255, 255, 255, 0.9);
-
-            display: flex;
-
-            flex-direction: column;
-
-            justify-content: center;
-
-            align-items: center;
-
-            border-radius: 8px;
-
-            /* Começa escondido */
-
-            visibility: hidden;
-
-            opacity: 0;
-
-            transition: opacity 0.3s, visibility 0.3s;
-
-        }
-
-        .loading-overlay.visible {
-
-             /* Fica visível quando a classe .visible é adicionada */
-
-            visibility: visible;
-
-            opacity: 1;
-
-        }
-
-        .spinner {
-
-            border: 5px solid #f3f3f3;
-
-            border-top: 5px solid #007bff;
-
-            border-radius: 50%;
-
-            width: 50px;
-
-            height: 50px;
-
-            animation: spin 1s linear infinite;
-
-        }
-
-        .loading-text {
-
-            margin-top: 20px;
-
-            color: #1a252f;
-
-            font-weight: bold;
-
-        }
-
-        @keyframes spin {
-
-            0% { transform: rotate(0deg); }
-
-            100% { transform: rotate(360deg); }
-
-        }
-
-    </style>
-
+        /* Estilos do formulário */
+        input[type="file"] {
+            display: none;
+        }
+        .upload-label {
+            display: inline-block;
+            padding: 15px 25px;
+            background-color: var(--upload-bg-color);
+            color: var(--upload-text-color);
+            border: 2px dashed var(--upload-border-color);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        .upload-label:hover {
+            background-color: var(--bg-color);
+        }
+        #file-name {
+            margin-top: 15px;
+            font-style: italic;
+            min-height: 20px; /* Garante espaço mesmo quando vazio */
+        }
+        .submit-btn {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 20px;
+            transition: background-color 0.3s;
+        }
+        .submit-btn:disabled {
+            background-color: var(--primary-color-disabled);
+            cursor: not-allowed;
+        }
+        
+        /* Estilos do Loading */
+        .loading-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(var(--container-bg-color-rgb, 255, 255, 255), 0.9);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            border-radius: 12px;
+            visibility: hidden;
+            opacity: 0;
+            transition: opacity 0.3s, visibility 0.3s;
+        }
+        .loading-overlay.visible {
+            visibility: visible;
+            opacity: 1;
+        }
+        .spinner {
+            border: 5px solid #f3f3f3;
+            border-top: 5px solid var(--primary-color);
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+        }
+        .loading-text {
+            margin-top: 20px;
+            color: var(--heading-color);
+            font-weight: bold;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Media Query para telas menores */
+        @media (max-width: 600px) {
+            .container {
+                padding: 25px;
+            }
+            h1 {
+                font-size: 24px;
+            }
+        }
+    </style>
 </head>
-
 <body>
-
-    <div class="container">
-
-        <div id="loading" class="loading-overlay">
-
-            <div class="spinner"></div>
-
-            <p class="loading-text">Processando seu relatório...<br>Isso pode levar alguns instantes.</p>
-
-        </div>
-
-
-
-        <div id="form-content">
-
-            <h1>Relatório de Biofeedback Vocal</h1>
-
-            <div class="instructions">
-            <h2>Como Gravar para a Melhor Análise:</h2>
-            <ol>
-                <li>
-                    <strong> encontre um lugar silencioso</strong> e use um fone com microfone ou um microfone externo para minimizar ruídos de fundo.
-                </li>
-                <li>
-                    <strong>Escolha uma vogal</strong> (como "Ah" ou "É") e uma <strong>nota musical</strong> que seja confortável para você, sem forçar a voz.
-                </li>
-                <li>
-                    <strong>Grave a nota por 3 a 5 segundos.</strong> Tente mantê-la o mais <strong>estável e contínua</strong> possível, sem variações de volume ou afinação.
-                </li>
-                 <li>
-                    <strong>Salve o arquivo</strong> (formatos comuns como MP3, M4A ou WAV são ideais) e envie abaixo.
-                </li>
-            </ol>
-            <p class="tips"><strong>Dica:</strong> Posicione o microfone a cerca de 15 cm da boca e ligeiramente de lado para evitar sons de "sopro".</p>
+    <div class="container">
+        <div id="loading" class="loading-overlay">
+            <div class="spinner"></div>
+            <p id="loading-text" class="loading-text">Analisando sua voz...<br>Isso pode levar alguns instantes.</p>
         </div>
 
+        <div id="form-content">
+            <h1>Análise Vocal com IA</h1>
 
+            <div class="instructions">
+                <h2>Como Gravar para a Melhor Análise 🎤</h2>
+                <ol>
+                    <li><strong>Encontre um lugar silencioso</strong> e use um fone com microfone para minimizar ruídos.</li>
+                    <li><strong>Escolha uma vogal</strong> (como "Ah" ou "É") e uma <strong>nota musical</strong> que seja confortável para você.</li>
+                    <li><strong>Grave a nota por 3 a 5 segundos</strong>, tentando mantê-la o mais <strong>estável e contínua</strong> possível.</li>
+                    <li><strong>Salve o arquivo</strong> (MP3, M4A ou WAV são ideais) e envie abaixo.</li>
+                </ol>
+                <p class="tips"><strong>Dica:</strong> Posicione o microfone a cerca de 15 cm da boca para evitar sons de "sopro".</p>
+            </div>
 
-            <form id="upload-form" action="https://n8n.squirrelstore.com.br/webhook/33d9de3a-2f0e-440d-b34e-c02d08c63028" method="POST" enctype="multipart/form-data">
+            <form id="upload-form" action="SEU_URL_DO_WEBHOOK_AQUI" method="POST" enctype="multipart/form-data">
+                <label for="audioFile" class="upload-label">Clique para escolher o arquivo de áudio</label>
+                <input type="file" id="audioFile" name="audioFile" accept="audio/*" required>
+                <div id="file-name">Nenhum arquivo selecionado</div>
+                <br>
+                <button type="submit" class="submit-btn" disabled>Gerar Relatório</button>
+            </form>
+        </div>
+    </div>
 
-                <label for="audioFile" class="upload-label">Clique para escolher o arquivo de áudio</label>
+    <script>
+        const fileInput = document.getElementById('audioFile');
+        const fileNameDisplay = document.getElementById('file-name');
+        const submitButton = document.querySelector('.submit-btn');
+        const uploadForm = document.getElementById('upload-form');
+        
+        const loadingOverlay = document.getElementById('loading');
+        const loadingText = document.getElementById('loading-text');
+        const formContent = document.getElementById('form-content');
 
-                <input type="file" id="audioFile" name="audioFile" accept="audio/*" required>
+        // Lembre-se de substituir pela URL do seu Webhook do n8n!
+        uploadForm.action = "https://n8n.squirrelstore.com.br/webhook/33d9de3a-2f0e-440d-b34e-c02d08c63028";
 
-                <div id="file-name">Nenhum arquivo selecionado</div>
+        fileInput.addEventListener('change', () => {
+            if (fileInput.files.length > 0) {
+                fileNameDisplay.textContent = `Arquivo: ${fileInput.files[0].name}`;
+                submitButton.disabled = false;
+            } else {
+                fileNameDisplay.textContent = 'Nenhum arquivo selecionado';
+                submitButton.disabled = true;
+            }
+        });
 
-                <br>
+        // Quando o formulário for enviado...
+        uploadForm.addEventListener('submit', () => {
+            // 1. Mostra o loading e esconde o formulário
+            loadingText.innerHTML = 'Analisando sua voz...<br>Isso pode levar alguns instantes.';
+            spinner.style.display = 'block';
+            formContent.style.display = 'none';
+            loadingOverlay.classList.add('visible');
 
-                <button type="submit" class="submit-btn" disabled>Processar e Baixar</button>
+            // 2. Agenda uma "limpeza" da tela
+            setTimeout(() => {
+                // Muda o texto para "concluído"
+                loadingText.innerHTML = 'Concluído!<br>Seu relatório foi enviado para download.';
+                
+                // Esconde o spinner
+                const spinner = document.querySelector('.spinner');
+                spinner.style.display = 'none';
 
-            </form>
+                // Reseta o formulário após mais 4 segundos
+                setTimeout(() => {
+                    loadingOverlay.classList.remove('visible');
+                    formContent.style.display = 'block';
+                    fileNameDisplay.textContent = 'Nenhum arquivo selecionado';
+                    submitButton.disabled = true;
+                    uploadForm.reset();
+                }, 4000);
 
-        </div>
-
-    </div>
-
-
-
-    <script>
-
-        const fileInput = document.getElementById('audioFile');
-
-        const fileNameDisplay = document.getElementById('file-name');
-
-        const submitButton = document.querySelector('.submit-btn');
-
-        const uploadForm = document.getElementById('upload-form');
-
-        
-
-        const loadingOverlay = document.getElementById('loading');
-
-        const formContent = document.getElementById('form-content');
-
-
-
-        fileInput.addEventListener('change', () => {
-
-            if (fileInput.files.length > 0) {
-
-                fileNameDisplay.textContent = `Arquivo selecionado: ${fileInput.files[0].name}`;
-
-                submitButton.disabled = false;
-
-            } else {
-
-                fileNameDisplay.textContent = 'Nenhum arquivo selecionado';
-
-                submitButton.disabled = true;
-
-            }
-
-        });
-
-
-
-        // Quando o formulário for enviado...
-
-        uploadForm.addEventListener('submit', () => {
-
-            // 1. Mostra o loading e esconde o formulário
-
-            formContent.style.display = 'none';
-
-            loadingOverlay.classList.add('visible');
-
-
-
-            // --- NOVA PARTE ADICIONADA ---
-
-            // 2. Agenda uma "limpeza" da tela para depois de alguns segundos
-
-            setTimeout(() => {
-
-                // Esconde o loading
-
-                loadingOverlay.classList.remove('visible');
-
-                // Mostra o formulário novamente
-
-                formContent.style.display = 'block';
-
-                // Limpa o nome do arquivo selecionado
-
-                fileNameDisplay.textContent = 'Nenhum arquivo selecionado';
-
-                // Desabilita o botão de envio
-
-                submitButton.disabled = true;
-
-                // Reseta o campo de input de arquivo
-
-                uploadForm.reset();
-
-            }, 8000); // <-- A tela será resetada após 8 segundos (8000 milissegundos)
-
-        });
-
-    </script>
-
+            }, 8000); // <-- Tempo total estimado para o processo
+        });
+    </script>
 </body>
-
 </html>

@@ -6,39 +6,14 @@
     <meta name="robots" content="noindex, nofollow">
     <title>Relatório de Biofeedback Vocal</title>
     <style>
-        /* Adicione este CSS dentro da sua tag <style> */
-        .instructions {
-            text-align: left;
-            margin-bottom: 30px;
-            border-top: 1px solid #eee;
-            border-bottom: 1px solid #eee;
-            padding: 20px 0;
-        }
-        .instructions h2 {
-            margin-top: 0;
-            font-size: 18px;
-            color: #1a252f;
-        }
-        .instructions ol {
-            padding-left: 20px;
-            color: #5a6978;
-        }
-        .instructions li {
-            margin-bottom: 10px;
-        }
-        .tips {
-            font-size: 14px;
-            text-align: center;
-            margin-top: 20px;
-            color: #5a6978;
-        }
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
             display: flex;
             justify-content: center;
             align-items: center;
-            height: 100vh;
+            min-height: 100vh; /* Garante que o corpo ocupe a tela toda */
             margin: 0;
+            padding: 20px 0; /* Espaçamento para telas pequenas */
             background-color: #f4f7f6;
             color: #333;
         }
@@ -50,14 +25,14 @@
             text-align: center;
             max-width: 500px;
             width: 90%;
-            position: relative; /* Adicionado para posicionar o loading */
+            position: relative;
         }
         h1 {
             color: #1a252f;
+            margin-top: 0;
         }
         p {
             color: #5a6978;
-            margin-bottom: 30px;
         }
         input[type="file"] {
             display: none;
@@ -96,46 +71,38 @@
             background-color: #a0c9f5;
             cursor: not-allowed;
         }
-        /* --- ESTILOS DO LOADING ADICIONADOS --- */
+        
+        /* --- ESTILOS DAS NOVAS INSTRUÇÕES --- */
+        .user-guide {
+            background-color: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 5px;
+            padding: 15px;
+            margin-top: 30px;
+            text-align: left;
+            font-size: 14px;
+        }
+        .user-guide p {
+            margin: 0;
+        }
+        .user-guide strong {
+            color: #007bff;
+        }
+
+        /* Estilos do Loading */
         .loading-overlay {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(255, 255, 255, 0.9);
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            border-radius: 8px;
-            /* Começa escondido */
-            visibility: hidden;
-            opacity: 0;
-            transition: opacity 0.3s, visibility 0.3s;
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background-color: rgba(255, 255, 255, 0.9); display: flex; flex-direction: column;
+            justify-content: center; align-items: center; border-radius: 8px;
+            visibility: hidden; opacity: 0; transition: opacity 0.3s, visibility 0.3s;
         }
-        .loading-overlay.visible {
-             /* Fica visível quando a classe .visible é adicionada */
-            visibility: visible;
-            opacity: 1;
-        }
+        .loading-overlay.visible { visibility: visible; opacity: 1; }
         .spinner {
-            border: 5px solid #f3f3f3;
-            border-top: 5px solid #007bff;
-            border-radius: 50%;
-            width: 50px;
-            height: 50px;
-            animation: spin 1s linear infinite;
+            border: 5px solid #f3f3f3; border-top: 5px solid #007bff; border-radius: 50%;
+            width: 50px; height: 50px; animation: spin 1s linear infinite;
         }
-        .loading-text {
-            margin-top: 20px;
-            color: #1a252f;
-            font-weight: bold;
-        }
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
+        .loading-text { margin-top: 20px; color: #1a252f; font-weight: bold; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     </style>
 </head>
 <body>
@@ -147,43 +114,28 @@
 
         <div id="form-content">
             <h1>Relatório de Biofeedback Vocal</h1>
-            <div class="instructions">
-            <h2>Como Gravar para a Melhor Análise:</h2>
-            <ol>
-                <li>
-                    <strong> encontre um lugar silencioso</strong> e use um fone com microfone ou um microfone externo para minimizar ruídos de fundo.
-                </li>
-                <li>
-                    <strong>Escolha uma vogal</strong> (como "Ah" ou "É") e uma <strong>nota musical</strong> que seja confortável para você, sem forçar a voz.
-                </li>
-                <li>
-                    <strong>Grave a nota por 3 a 5 segundos.</strong> Tente mantê-la o mais <strong>estável e contínua</strong> possível, sem variações de volume ou afinação.
-                </li>
-                 <li>
-                    <strong>Salve o arquivo</strong> (formatos comuns como MP3, M4A ou WAV são ideais) e envie abaixo.
-                </li>
-            </ol>
-            <p class="tips"><strong>Dica:</strong> Posicione o microfone a cerca de 15 cm da boca e ligeiramente de lado para evitar sons de "sopro".</p>
-        </div>
+            <p>Faça o upload do seu arquivo de áudio abaixo para iniciar o processamento.</p>
 
-            <form id="upload-form" action="https://n8n.squirrelstore.com.br/webhook/33d9de3a-2f0e-440d-b34e-c02d08c63028" method="POST" enctype="multipart/form-data">
-    <label for="audioFile" class="upload-label">Clique para escolher o arquivo de áudio</label>
-    
-    <input type="file" id="audioFile" name="audioFile" accept="audio/*,audio/mpeg,audio/wav,audio/m4a" required>
-    
-    <div id="file-name">Nenhum arquivo selecionado</div>
-    <br>
-    <button type="submit" class="submit-btn" disabled>Processar e Baixar</button>
-</form>
+            <form id="upload-form" action="https... (sua URL do n8n)" method="POST" enctype="multipart/form-data">
+                <label for="audioFile" class="upload-label">Clique para escolher ou gravar um áudio</label>
+                <input type="file" id="audioFile" name="audioFile" accept="audio/*,audio/mpeg,audio/wav,audio/m4a" required>
+                <div id="file-name">Nenhum arquivo selecionado</div>
+                <br>
+                <button type="submit" class="submit-btn" disabled>Processar e Baixar</button>
+            </form>
+
+            <div class="user-guide">
+                <p><strong>Dica para Celular:</strong> Ao clicar acima, seu celular mostrará algumas opções. Escolha <strong>"Gravador de Voz"</strong> para criar um novo áudio ou <strong>"Arquivos"</strong> para selecionar um áudio já existente.</p>
+            </div>
         </div>
     </div>
 
     <script>
+        // SEU JAVASCRIPT CONTINUA IGUAL, NÃO PRECISA MUDAR NADA NELE
         const fileInput = document.getElementById('audioFile');
         const fileNameDisplay = document.getElementById('file-name');
         const submitButton = document.querySelector('.submit-btn');
         const uploadForm = document.getElementById('upload-form');
-        
         const loadingOverlay = document.getElementById('loading');
         const formContent = document.getElementById('form-content');
 
@@ -197,32 +149,17 @@
             }
         });
 
-        // Quando o formulário for enviado...
         uploadForm.addEventListener('submit', () => {
-            // 1. Mostra o loading e esconde o formulário
             formContent.style.display = 'none';
             loadingOverlay.classList.add('visible');
-
-            // --- NOVA PARTE ADICIONADA ---
-            // 2. Agenda uma "limpeza" da tela para depois de alguns segundos
             setTimeout(() => {
-                // Esconde o loading
                 loadingOverlay.classList.remove('visible');
-                // Mostra o formulário novamente
                 formContent.style.display = 'block';
-                // Limpa o nome do arquivo selecionado
                 fileNameDisplay.textContent = 'Nenhum arquivo selecionado';
-                // Desabilita o botão de envio
                 submitButton.disabled = true;
-                // Reseta o campo de input de arquivo
                 uploadForm.reset();
-            }, 8000); // <-- A tela será resetada após 8 segundos (8000 milissegundos)
+            }, 8000);
         });
     </script>
 </body>
 </html>
-
-
-
-
-

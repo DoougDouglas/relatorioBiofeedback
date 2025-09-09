@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Relatório de Biofeedback Vocal</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f4f7f6;
+            color: #333;
+        }
+        .container {
+            background-color: white;
+            padding: 40px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            max-width: 500px;
+            width: 90%;
+        }
+        h1 {
+            color: #1a252f;
+        }
+        p {
+            color: #5a6978;
+            margin-bottom: 30px;
+        }
+        input[type="file"] {
+            display: none;
+        }
+        .upload-label {
+            display: inline-block;
+            padding: 12px 20px;
+            background-color: #e8eeef;
+            color: #3b4d5a;
+            border: 2px dashed #cddae0;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        .upload-label:hover {
+            background-color: #dbe5e7;
+        }
+        #file-name {
+            margin-top: 15px;
+            font-style: italic;
+            color: #5a6978;
+        }
+        .submit-btn {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 5px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 20px;
+            transition: background-color 0.3s;
+        }
+        .submit-btn:disabled {
+            background-color: #a0c9f5;
+            cursor: not-allowed;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Relatório de Biofeedback Vocal</h1>
+        <p>Faça o upload do seu arquivo de áudio abaixo para iniciar o processamento.</p>
+
+        <form action="https://n8n.squirrelstore.com.br/webhook/33d9de3a-2f0e-440d-b34e-c02d08c63028" method="POST" enctype="multipart/form-data">
+            
+            <label for="audioFile" class="upload-label">Clique para escolher o arquivo de áudio</label>
+            <input type="file" id="audioFile" name="audioFile" accept="audio/*" required>
+            <div id="file-name">Nenhum arquivo selecionado</div>
+
+            <br>
+            <button type="submit" class="submit-btn" disabled>Processar e Baixar</button>
+
+        </form>
+    </div>
+
+    <script>
+        const fileInput = document.getElementById('audioFile');
+        // CORREÇÃO AQUI: O ID correto é 'file-name'
+        const fileNameDisplay = document.getElementById('file-name');
+        const submitButton = document.querySelector('.submit-btn');
+
+        fileInput.addEventListener('change', () => {
+            if (fileInput.files.length > 0) {
+                fileNameDisplay.textContent = `Arquivo selecionado: ${fileInput.files[0].name}`;
+                submitButton.disabled = false; // Habilita o botão
+            } else {
+                fileNameDisplay.textContent = 'Nenhum arquivo selecionado';
+                submitButton.disabled = true; // Desabilita o botão
+            }
+        });
+    </script>
+
+</body>
+</html>

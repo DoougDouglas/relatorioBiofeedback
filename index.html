@@ -23,6 +23,7 @@
             text-align: center;
             max-width: 500px;
             width: 90%;
+            position: relative; /* Adicionado para posicionar o loading */
         }
         h1 {
             color: #1a252f;
@@ -68,41 +69,96 @@
             background-color: #a0c9f5;
             cursor: not-allowed;
         }
+        /* --- ESTILOS DO LOADING ADICIONADOS --- */
+        .loading-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(255, 255, 255, 0.9);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            border-radius: 8px;
+            /* Começa escondido */
+            visibility: hidden;
+            opacity: 0;
+            transition: opacity 0.3s, visibility 0.3s;
+        }
+        .loading-overlay.visible {
+             /* Fica visível quando a classe .visible é adicionada */
+            visibility: visible;
+            opacity: 1;
+        }
+        .spinner {
+            border: 5px solid #f3f3f3;
+            border-top: 5px solid #007bff;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+        }
+        .loading-text {
+            margin-top: 20px;
+            color: #1a252f;
+            font-weight: bold;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>Relatório de Biofeedback Vocal</h1>
-        <p>Faça o upload do seu arquivo de áudio abaixo para iniciar o processamento.</p>
+        <div id="loading" class="loading-overlay">
+            <div class="spinner"></div>
+            <p class="loading-text">Processando seu relatório...<br>Isso pode levar alguns instantes.</p>
+        </div>
 
-        <form action="https://n8n.squirrelstore.com.br/webhook/33d9de3a-2f0e-440d-b34e-c02d08c63028" method="POST" enctype="multipart/form-data">
-            
-            <label for="audioFile" class="upload-label">Clique para escolher o arquivo de áudio</label>
-            <input type="file" id="audioFile" name="audioFile" accept="audio/*" required>
-            <div id="file-name">Nenhum arquivo selecionado</div>
+        <div id="form-content">
+            <h1>Relatório de Biofeedback Vocal</h1>
+            <p>Faça o upload do seu arquivo de áudio abaixo para iniciar o processamento.</p>
 
-            <br>
-            <button type="submit" class="submit-btn" disabled>Processar e Baixar</button>
-
-        </form>
+            <form id="upload-form" action="https://n8n.squirrelstore.com.br/webhook/33d9de3a-2f0e-440d-b34e-c02d08c63028" method="POST" enctype="multipart/form-data">
+                <label for="audioFile" class="upload-label">Clique para escolher o arquivo de áudio</label>
+                <input type="file" id="audioFile" name="audioFile" accept="audio/*" required>
+                <div id="file-name">Nenhum arquivo selecionado</div>
+                <br>
+                <button type="submit" class="submit-btn" disabled>Processar e Baixar</button>
+            </form>
+        </div>
     </div>
 
     <script>
         const fileInput = document.getElementById('audioFile');
-        // CORREÇÃO AQUI: O ID correto é 'file-name'
         const fileNameDisplay = document.getElementById('file-name');
         const submitButton = document.querySelector('.submit-btn');
+        const uploadForm = document.getElementById('upload-form');
+        
+        // --- ELEMENTOS DO LOADING CAPTURADOS ---
+        const loadingOverlay = document.getElementById('loading');
+        const formContent = document.getElementById('form-content');
 
         fileInput.addEventListener('change', () => {
             if (fileInput.files.length > 0) {
                 fileNameDisplay.textContent = `Arquivo selecionado: ${fileInput.files[0].name}`;
-                submitButton.disabled = false; // Habilita o botão
+                submitButton.disabled = false;
             } else {
                 fileNameDisplay.textContent = 'Nenhum arquivo selecionado';
-                submitButton.disabled = true; // Desabilita o botão
+                submitButton.disabled = true;
             }
         });
-    </script>
 
+        // --- FUNÇÃO PARA MOSTRAR O LOADING ---
+        uploadForm.addEventListener('submit', () => {
+            // Esconde o conteúdo do formulário
+            formContent.style.display = 'none';
+            // Mostra o loading
+            loadingOverlay.classList.add('visible');
+        });
+    </script>
 </body>
 </html>

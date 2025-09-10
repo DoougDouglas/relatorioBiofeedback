@@ -4,222 +4,299 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard de Progresso Vocal</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg-color: #f4f7f6; --container-bg-color: #ffffff; --text-color: #5a6978;
-            --heading-color: #1a252f; --primary-color: #007bff; --border-color-light: #e1e5e8;
-            --color-pitch: #007bff; --color-hnr: #28a745; --color-duration: #ffc107; --color-stdev: #6c757d;
+            --bg-color: #f0f2f5; --card-bg-color: #ffffff; --text-color: #6b7280;
+            --heading-color: #111827; --primary-color: #007bff; --border-color: #e5e7eb;
+            --color-pitch: #007bff; --color-hnr: #10b981; --color-duration: #f59e0b; --color-stdev: #ef4444;
+            --chart-grid-color: rgba(0, 0, 0, 0.05);
         }
         @media (prefers-color-scheme: dark) {
             :root {
-                --bg-color: #121212; --container-bg-color: #1e1e1e; --text-color: #a9b3be;
-                --heading-color: #e1e3e6; --primary-color: #2a9dff; --border-color-light: #333;
-                --color-pitch: #2a9dff; --color-hnr: #32cd32; --color-duration: #ffd700; --color-stdev: #adb5bd;
+                --bg-color: #111827; --card-bg-color: #1f2937; --text-color: #9ca3af;
+                --heading-color: #f9fafb; --primary-color: #3b82f6; --border-color: #374151;
+                --color-pitch: #3b82f6; --color-hnr: #34d399; --color-duration: #fbbF59; --color-stdev: #f87171;
+                --chart-grid-color: rgba(255, 255, 255, 0.1);
             }
         }
+        * { box-sizing: border-box; }
         body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            background-color: var(--bg-color); color: var(--text-color); margin: 0; padding: 10px;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color); color: var(--text-color);
+            margin: 0; padding: 1.5rem;
         }
-        .container {
-            width: 100%;
-            max-width: 1000px; margin: 10px auto; padding: 20px;
-            background-color: var(--container-bg-color); border-radius: 12px;
-            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
-            box-sizing: border-box;
-        }
+        .container { max-width: 1200px; margin: 0 auto; }
         header {
-            display: flex;
-            flex-wrap: wrap; /* Permite quebrar a linha em telas pequenas */
-            justify-content: center; /* Centraliza no mobile */
-            gap: 15px;
-            align-items: center;
-            border-bottom: 1px solid var(--border-color-light);
-            padding-bottom: 15px;
-            margin-bottom: 20px;
+            display: flex; flex-wrap: wrap; justify-content: space-between; gap: 1rem;
+            align-items: center; margin-bottom: 2rem;
         }
-        h1 { color: var(--heading-color); text-align: center; margin: 0; font-size: 24px; flex-grow: 1; }
+        h1 { color: var(--heading-color); margin: 0; font-size: 1.875rem; }
         .controls { 
-            display: flex; 
-            flex-direction: column; /* Começa como coluna para mobile */
-            gap: 15px; 
-            margin-bottom: 30px; 
+            display: flex; flex-direction: column; gap: 1rem;
+            padding: 1.5rem; background-color: var(--card-bg-color);
+            border-radius: 0.75rem; box-shadow: 0 1px 3px rgba(0,0,0,0.1), 0 1px 2px rgba(0,0,0,0.06);
         }
         .input-group { width: 100%; }
-        .input-label { display: block; margin-bottom: 5px; font-size: 14px; text-align: left; }
+        .input-label { display: block; margin-bottom: 0.5rem; font-size: 0.875rem; font-weight: 500; text-align: left; }
         .input-field {
-            width: 100%; padding: 12px; border: 1px solid var(--border-color-light);
-            background-color: var(--bg-color); color: var(--text-color);
-            border-radius: 8px; font-size: 16px; box-sizing: border-box;
+            width: 100%; padding: 0.75rem; border: 1px solid var(--border-color);
+            background-color: var(--bg-color); color: var(--heading-color);
+            border-radius: 0.5rem; font-size: 1rem;
         }
         .btn {
             background-color: var(--primary-color); color: white; border: none;
-            padding: 12px 20px; border-radius: 8px; font-size: 16px;
-            font-weight: 500; cursor: pointer; transition: background-color 0.2s;
-            width: 100%; /* Botão ocupa largura total no mobile */
+            padding: 0.75rem 1.5rem; border-radius: 0.5rem; font-size: 1rem;
+            font-weight: 500; cursor: pointer; transition: opacity 0.2s;
         }
         .btn-secondary {
             background-color: transparent; color: var(--primary-color);
             border: 1px solid var(--primary-color); text-decoration: none;
-            padding: 8px 15px; white-space: nowrap; /* Evita que o texto quebre */
         }
-        .btn:hover { opacity: 0.9; }
-        .chart-grid { display: grid; grid-template-columns: 1fr; gap: 30px; margin-top: 30px; }
-        .chart-wrapper { padding: 20px; border: 1px solid var(--border-color-light); border-radius: 8px; }
-        .chart-wrapper h2 { margin-top: 0; font-size: 18px; text-align: left; color: var(--heading-color); }
-        #message { text-align: center; font-style: italic; min-height: 20px; }
+        .btn:hover { opacity: 0.85; }
+        #message { text-align: center; margin-top: 1.5rem; min-height: 24px; font-weight: 500; }
+        .dashboard-grid {
+            display: grid; grid-template-columns: 1fr;
+            gap: 1.5rem; margin-top: 1.5rem;
+        }
+        .card {
+            background-color: var(--card-bg-color);
+            padding: 1.5rem;
+            border-radius: 0.75rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1), 0 1px 2px rgba(0,0,0,0.06);
+        }
+        .card h2 { margin-top: 0; font-size: 1.25rem; color: var(--heading-color); }
+        
+        /* Estilo para a descrição do gráfico */
+        .chart-description {
+            font-size: 0.875rem;
+            text-align: center;
+            margin-top: 1rem;
+            padding: 0 1rem;
+            opacity: 0.9;
+        }
 
-        /* Media Query para telas maiores (desktop) */
         @media (min-width: 768px) {
-            body { padding: 20px; }
-            .container { padding: 30px; }
-            h1 { font-size: 28px; text-align: left; }
-            header { flex-wrap: nowrap; justify-content: space-between; }
-            .controls { 
-                flex-direction: row; /* Volta a ser linha no desktop */
-                align-items: flex-end; 
-                gap: 10px;
-            }
-            .btn { width: auto; } /* Botão volta ao tamanho automático */
-            .chart-grid { grid-template-columns: repeat(2, 1fr); }
+            .controls { flex-direction: row; align-items: flex-end; }
+            .btn { width: auto; }
+            .dashboard-grid { grid-template-columns: repeat(2, 1fr); }
+            .full-width { grid-column: 1 / -1; }
         }
     </style>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
     <div class="container">
         <header>
-            <h1>Dashboard de Progresso 📈</h1>
-            <a href="./index.html" class="btn btn-secondary">← Nova Análise</a>
+            <h1>Dashboard de Progresso</h1>
+            <a href="./index.html" class="btn btn-secondary">← Fazer Nova Análise</a>
         </header>
+
         <div class="controls">
             <div class="input-group">
                 <label for="email" class="input-label">E-mail do Aluno:</label>
-                <input type="email" id="email" class="input-field" placeholder="Digite o e-mail">
+                <input type="email" id="email" class="input-field" placeholder="seuemail@exemplo.com">
             </div>
             <div class="input-group">
                 <label for="exercise-filter" class="input-label">Filtrar por Exercício:</label>
                 <select id="exercise-filter" class="input-field">
                     <option value="">Todos os Exercícios</option>
                     <option value="sustentacao_vogal">Análise de Qualidade</option>
-                    <option value="escala_5_notas">Escala de 5 Notas</option>
                     <option value="resistencia_tmf">Teste de Resistência</option>
+                    <option value="teste_vogais">Teste de Vogais (A-E-I-O-U)</option>
                 </select>
             </div>
             <button id="search-btn" class="btn">Buscar</button>
         </div>
-        <p id="message">Insira um e-mail para carregar os dados.</p>
         
-        <div class="chart-grid">
-            <div class="chart-wrapper" id="pitch-chart-wrapper" style="display: none;">
-                <h2>Afinação e Estabilidade</h2>
-                <canvas id="pitchChart"></canvas>
-            </div>
-            <div class="chart-wrapper" id="hnr-chart-wrapper" style="display: none;">
-                <h2>Qualidade Vocal (HNR)</h2>
-                <canvas id="hnrChart"></canvas>
-            </div>
-            <div class="chart-wrapper" id="duration-chart-wrapper" style="display: none;">
-                <h2>Eficiência Respiratória (TMF)</h2>
-                <canvas id="durationChart"></canvas>
-            </div>
-        </div>
+        <p id="message"></p>
+        <div id="dashboard-content" class="dashboard-grid"></div>
     </div>
 
     <script>
-        const N8N_PROGRESS_WEBHOOK_URL = 'https://n8n.squirrelstore.com.br/webhook/6b6fc96a-b318-480a-9396-38c60f75e122'; 
+        Chart.register(ChartDataLabels);
 
+        const N8N_PROGRESS_WEBHOOK_URL = 'https://n8n.squirrelstore.com.br/webhook/6b6fc96a-b318-480a-9396-38c60f75e122';
         const searchButton = document.getElementById('search-btn');
         const emailInput = document.getElementById('email');
         const exerciseFilter = document.getElementById('exercise-filter');
         const messageDisplay = document.getElementById('message');
-        
-        const chartWrappers = {
-            pitch: document.getElementById('pitch-chart-wrapper'),
-            hnr: document.getElementById('hnr-chart-wrapper'),
-            duration: document.getElementById('duration-chart-wrapper')
-        };
-        
-        const chartCanvases = {
-            pitch: document.getElementById('pitchChart').getContext('2d'),
-            hnr: document.getElementById('hnrChart').getContext('2d'),
-            duration: document.getElementById('durationChart').getContext('2d')
-        };
+        const dashboardContent = document.getElementById('dashboard-content');
         
         let charts = {};
 
+        // --- FUNÇÃO PRINCIPAL ---
         async function buscarProgresso() {
             const email = emailInput.value.trim();
             const exercise = exerciseFilter.value;
-            if (!email) {
-                messageDisplay.textContent = "Por favor, digite um e-mail.";
-                return;
-            }
+            if (!email) { messageDisplay.textContent = "Por favor, digite um e-mail."; return; }
 
-            messageDisplay.textContent = "Buscando dados...";
-            
+            messageDisplay.textContent = "Buscando histórico...";
+            dashboardContent.innerHTML = '';
             Object.values(charts).forEach(chart => chart.destroy());
-            Object.values(chartWrappers).forEach(wrapper => wrapper.style.display = 'none');
 
             try {
                 const response = await fetch(`${N8N_PROGRESS_WEBHOOK_URL}?email=${encodeURIComponent(email)}&exercise=${encodeURIComponent(exercise)}`);
                 if (!response.ok) throw new Error('Falha ao buscar os dados. Verifique o e-mail.');
                 
-                const analysesData = await response.json();
-                if (analysesData.length === 0) {
-                    messageDisplay.textContent = "Nenhuma análise encontrada para esta combinação de e-mail e exercício.";
+                const allAnalyses = await response.json();
+                if (allAnalyses.length === 0) {
+                    messageDisplay.textContent = "Nenhuma análise encontrada para esta combinação.";
                     return;
                 }
 
-                const labels = analysesData.map(item => new Date(item.created_at).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' }));
-                
-                Object.values(chartWrappers).forEach(wrapper => wrapper.style.display = 'block');
-
-                // GRÁFICO 1: AFINAÇÃO E ESTABILIDADE
-                charts.pitch = new Chart(chartCanvases.pitch, {
-                    type: 'line',
-                    data: {
-                        labels: labels,
-                        datasets: [
-                            { label: 'Afinação Média (Hz)', data: analysesData.map(item => item.pitch_hz), borderColor: 'var(--color-pitch)', tension: 0.1 },
-                            { label: 'Desvio Padrão (Hz)', data: analysesData.map(item => item.stdev_pitch_hz), borderColor: 'var(--color-stdev)', borderDash: [5, 5], tension: 0.1 }
-                        ]
-                    },
-                    options: { scales: { y: { title: { display: true, text: 'Frequência (Hz)' } } } }
-                });
-
-                // GRÁFICO 2: QUALIDADE VOCAL (HNR)
-                charts.hnr = new Chart(chartCanvases.hnr, {
-                    type: 'line',
-                    data: {
-                        labels: labels,
-                        datasets: [{
-                            label: 'Qualidade (HNR em dB)', data: analysesData.map(item => item.hnr_db),
-                            borderColor: 'var(--color-hnr)', backgroundColor: 'rgba(40, 167, 69, 0.2)',
-                            fill: true, tension: 0.1
-                        }]
-                    },
-                    options: { scales: { y: { title: { display: true, text: 'HNR (dB)' } } } }
-                });
-
-                // GRÁFICO 3: EFICIÊNCIA RESPIRATÓRIA (TMF)
-                charts.duration = new Chart(chartCanvases.duration, {
-                    type: 'bar',
-                    data: {
-                        labels: labels,
-                        datasets: [{
-                            label: 'Duração (segundos)', data: analysesData.map(item => item.duration_seconds),
-                            backgroundColor: 'var(--color-duration)'
-                        }]
-                    },
-                    options: { scales: { y: { title: { display: true, text: 'Segundos' } } } }
-                });
-
-                messageDisplay.textContent = `${analysesData.length} análises encontradas.`;
+                messageDisplay.textContent = `Exibindo ${allAnalyses.length} análises encontradas.`;
+                renderDashboard(allAnalyses);
 
             } catch (error) {
                 messageDisplay.textContent = `Erro: ${error.message}`;
             }
+        }
+        
+        // --- FUNÇÃO PARA RENDERIZAR O DASHBOARD ---
+        function renderDashboard(analysesData) {
+            const labels = analysesData.map(item => new Date(item.created_at).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: '2-digit' }));
+            
+            // GRÁFICOS DE EVOLUÇÃO GERAL
+            createLineChart('hnrChart', 'Evolução da Qualidade Vocal', labels, [{
+                label: 'HNR (dB)', data: analysesData.map(item => item.hnr_db),
+                borderColor: 'var(--color-hnr)', backgroundColor: 'rgba(40, 167, 69, 0.1)', fill: true
+            }], "Este gráfico mostra a 'pureza' do seu som ao longo do tempo. Valores mais altos indicam uma voz mais clara e com menos soprosidade.");
+            
+            createLineChart('pitchChart', 'Evolução da Afinação e Estabilidade', labels, [
+                { label: 'Afinação Média (Hz)', data: analysesData.map(item => item.pitch_hz), borderColor: 'var(--color-pitch)' },
+                { label: 'Estabilidade (Hz)', data: analysesData.map(item => item.stdev_pitch_hz), borderColor: 'var(--color-stdev)', borderDash: [5, 5] }
+            ], "A linha azul mostra sua afinação média. A linha tracejada mostra a estabilidade: quanto mais próxima de zero, mais firme é sua nota.");
+
+            // GRÁFICO ESPECÍFICO PARA O TESTE DE VOGAIS
+            const vowelTests = analysesData.filter(item => item.exercise === 'teste_vogais' && item.vowel_space_data);
+            if (vowelTests.length > 0) {
+                const latestVowelTest = vowelTests[vowelTests.length - 1];
+                createVowelSpaceChart('vowelChart', 'Mapa Vocálico (Último Teste de Dicção)', latestVowelTest.vowel_space_data);
+            }
+        }
+        
+        // --- FUNÇÕES AUXILIARES ---
+        function createCard(title, extraClass = '') {
+            const card = document.createElement('div');
+            card.className = `card ${extraClass}`;
+            const cardTitle = document.createElement('h2');
+            cardTitle.textContent = title;
+            card.appendChild(cardTitle);
+            dashboardContent.appendChild(card);
+            return card;
+        }
+
+        function getChartOptions(yLabel = '') {
+            const textColor = getComputedStyle(document.documentElement).getPropertyValue('--text-color').trim();
+            const gridColor = getComputedStyle(document.documentElement).getPropertyValue('--chart-grid-color').trim();
+            return {
+                responsive: true, maintainAspectRatio: false, tension: 0.1,
+                scales: {
+                    x: { ticks: { color: textColor }, grid: { color: gridColor } },
+                    y: { ticks: { color: textColor }, grid: { color: gridColor }, title: { display: true, text: yLabel, color: textColor } }
+                },
+                plugins: {
+                    legend: { position: 'bottom', labels: { color: textColor } },
+                    datalabels: { display: false }
+                }
+            };
+        }
+
+        function createLineChart(id, title, labels, datasets, description) {
+            const card = createCard(title);
+            const canvas = document.createElement('canvas');
+            card.appendChild(canvas);
+            
+            if (description) {
+                const desc = document.createElement('p');
+                desc.className = 'chart-description';
+                desc.textContent = description;
+                card.appendChild(desc);
+            }
+
+            const yLabel = datasets[0]?.label.match(/\((.*?)\)/)?.[1] || '';
+            charts[id] = new Chart(canvas.getContext('2d'), { type: 'line', data: { labels, datasets }, options: getChartOptions(yLabel) });
+        }
+        
+        function createVowelSpaceChart(id, title, vowelData) {
+            const card = createCard(title, 'full-width');
+            const canvas = document.createElement('canvas');
+            card.appendChild(canvas);
+            
+            const desc = document.createElement('p');
+            desc.className = 'chart-description';
+            desc.innerHTML = "Este mapa mostra a clareza da sua dicção. Quanto maior e mais bem definido o <b>triângulo tracejado</b> entre A, I e U, mais distintas são suas vogais.";
+            card.appendChild(desc);
+            
+            const vogais = ['a', 'e', 'i', 'o', 'u'];
+            const dataPoints = vogais.map(v => (vowelData && vowelData[v]) ? {x: vowelData[v].f2, y: vowelData[v].f1} : null).filter(p => p !== null && p.x && p.y);
+            
+            const options = getChartOptions('Formante 1 (F1)');
+            options.scales.x.reverse = true;
+            options.scales.y.reverse = true;
+            options.scales.x.title = { display: true, text: 'Formante 2 (F2)', color: 'var(--text-color)' };
+            options.plugins.datalabels = {
+                display: true, color: 'var(--heading-color)',
+                font: { weight: 'bold', size: 14 },
+                align: 'top', offset: 8,
+                formatter: (value, context) => vogais[context.dataIndex].toUpperCase()
+            };
+            
+            // --- INÍCIO DA CORREÇÃO DO TRIÂNGULO ---
+            const trianglePlugin = {
+                id: 'vowelTriangle',
+                afterDraw: chart => {
+                    const vowelPoints = chart.data.datasets[0].data;
+                    const vogalCoords = {
+                        a: vowelPoints.find((p, i) => vogais[i] === 'a'),
+                        i: vowelPoints.find((p, i) => vogais[i] === 'i'),
+                        u: vowelPoints.find((p, i) => vogais[i] === 'u')
+                    };
+
+                    if (vogalCoords.a && vogalCoords.i && vogalCoords.u) {
+                        const ctx = chart.ctx;
+                        const meta = chart.getDatasetMeta(0);
+                        
+                        const getPointPixel = (point) => {
+                           const found = meta.data.find(p => p.x.toFixed(2) === chart.scales.x.getPixelForValue(point.x).toFixed(2) && p.y.toFixed(2) === chart.scales.y.getPixelForValue(point.y).toFixed(2));
+                           return found ? {x: found.x, y: found.y} : null;
+                        }
+
+                        const pixelA = getPointPixel(vogalCoords.a);
+                        const pixelI = getPointPixel(vogalCoords.i);
+                        const pixelU = getPointPixel(vogalCoords.u);
+
+                        if (pixelA && pixelI && pixelU) {
+                            ctx.beginPath();
+                            ctx.moveTo(pixelA.x, pixelA.y);
+                            ctx.lineTo(pixelI.x, pixelI.y);
+                            ctx.lineTo(pixelU.x, pixelU.y);
+                            ctx.closePath();
+                            ctx.strokeStyle = 'rgba(128, 128, 128, 0.7)';
+                            ctx.lineWidth = 2;
+                            ctx.setLineDash([6, 6]);
+                            ctx.stroke();
+                            ctx.setLineDash([]);
+                        }
+                    }
+                }
+            };
+            // --- FIM DA CORREÇÃO DO TRIÂNGULO ---
+            
+            charts[id] = new Chart(canvas.getContext('2d'), {
+                type: 'scatter',
+                data: { datasets: [{ 
+                    label: 'Vogais', data: dataPoints, 
+                    backgroundColor: 'var(--primary-color)', 
+                    pointRadius: 6, hoverRadius: 8
+                }] },
+                options: options,
+                plugins: [ChartDataLabels, trianglePlugin] // Registra o plugin do triângulo
+            });
         }
 
         searchButton.addEventListener('click', buscarProgresso);

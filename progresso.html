@@ -19,49 +19,70 @@
         }
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            background-color: var(--bg-color); color: var(--text-color); margin: 0; padding: 20px;
+            background-color: var(--bg-color); color: var(--text-color); margin: 0; padding: 10px;
         }
         .container {
-            max-width: 900px; margin: 20px auto; padding: 30px;
+            width: 100%;
+            max-width: 1000px; margin: 10px auto; padding: 20px;
             background-color: var(--container-bg-color); border-radius: 12px;
             box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+            box-sizing: border-box;
         }
         header {
             display: flex;
-            justify-content: space-between;
+            flex-wrap: wrap; /* Permite quebrar a linha em telas pequenas */
+            justify-content: center; /* Centraliza no mobile */
+            gap: 15px;
             align-items: center;
             border-bottom: 1px solid var(--border-color-light);
             padding-bottom: 15px;
             margin-bottom: 20px;
         }
-        h1 { color: var(--heading-color); text-align: center; margin: 0; font-size: 28px; }
-        .controls { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 30px; align-items: flex-end; }
-        .input-group { flex-grow: 1; min-width: 200px; }
+        h1 { color: var(--heading-color); text-align: center; margin: 0; font-size: 24px; flex-grow: 1; }
+        .controls { 
+            display: flex; 
+            flex-direction: column; /* Começa como coluna para mobile */
+            gap: 15px; 
+            margin-bottom: 30px; 
+        }
+        .input-group { width: 100%; }
         .input-label { display: block; margin-bottom: 5px; font-size: 14px; text-align: left; }
         .input-field {
-            width: 100%; padding: 10px; border: 1px solid var(--border-color-light);
+            width: 100%; padding: 12px; border: 1px solid var(--border-color-light);
             background-color: var(--bg-color); color: var(--text-color);
             border-radius: 8px; font-size: 16px; box-sizing: border-box;
         }
         .btn {
             background-color: var(--primary-color); color: white; border: none;
-            padding: 10px 20px; border-radius: 8px; font-size: 16px;
+            padding: 12px 20px; border-radius: 8px; font-size: 16px;
             font-weight: 500; cursor: pointer; transition: background-color 0.2s;
-            height: 42px; /* Alinha altura com inputs */
+            width: 100%; /* Botão ocupa largura total no mobile */
         }
         .btn-secondary {
-            background-color: transparent;
-            color: var(--primary-color);
-            border: 1px solid var(--primary-color);
-            text-decoration: none;
-            padding: 8px 15px;
+            background-color: transparent; color: var(--primary-color);
+            border: 1px solid var(--primary-color); text-decoration: none;
+            padding: 8px 15px; white-space: nowrap; /* Evita que o texto quebre */
         }
         .btn:hover { opacity: 0.9; }
-        .chart-grid { display: grid; grid-template-columns: 1fr; gap: 40px; margin-top: 30px; }
+        .chart-grid { display: grid; grid-template-columns: 1fr; gap: 30px; margin-top: 30px; }
         .chart-wrapper { padding: 20px; border: 1px solid var(--border-color-light); border-radius: 8px; }
         .chart-wrapper h2 { margin-top: 0; font-size: 18px; text-align: left; color: var(--heading-color); }
-        @media (min-width: 768px) { .chart-grid { grid-template-columns: repeat(2, 1fr); } }
         #message { text-align: center; font-style: italic; min-height: 20px; }
+
+        /* Media Query para telas maiores (desktop) */
+        @media (min-width: 768px) {
+            body { padding: 20px; }
+            .container { padding: 30px; }
+            h1 { font-size: 28px; text-align: left; }
+            header { flex-wrap: nowrap; justify-content: space-between; }
+            .controls { 
+                flex-direction: row; /* Volta a ser linha no desktop */
+                align-items: flex-end; 
+                gap: 10px;
+            }
+            .btn { width: auto; } /* Botão volta ao tamanho automático */
+            .chart-grid { grid-template-columns: repeat(2, 1fr); }
+        }
     </style>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
@@ -69,7 +90,7 @@
     <div class="container">
         <header>
             <h1>Dashboard de Progresso 📈</h1>
-            <a href="./index.html" class="btn btn-secondary">← Voltar para Análise</a>
+            <a href="./index.html" class="btn btn-secondary">← Nova Análise</a>
         </header>
         <div class="controls">
             <div class="input-group">
@@ -205,5 +226,4 @@
         emailInput.addEventListener('keyup', (event) => { if (event.key === 'Enter') buscarProgresso(); });
     </script>
 </body>
-
 </html>

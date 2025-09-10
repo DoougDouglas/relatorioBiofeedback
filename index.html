@@ -6,7 +6,6 @@
     <meta name="robots" content="noindex, nofollow">
     <title>Análise Vocal IA</title>
     <style>
-        /* Define as variáveis de cor para o tema claro e escuro */
         :root {
             --bg-color: #f4f7f6;
             --container-bg-color: #ffffff;
@@ -18,8 +17,8 @@
             --upload-bg-color: #e8eeef;
             --upload-border-color: #cddae0;
             --upload-text-color: #3b4d5a;
-            --loading-bg-rgb: 255, 255, 255; /* Cor de fundo do loading em RGB para o modo claro */
-            --loading-text-color: #1a252f; /* Cor do texto do loading no modo claro */
+            --loading-bg-rgb: 255, 255, 255;
+            --loading-text-color: #1a252f;
         }
 
         @media (prefers-color-scheme: dark) {
@@ -34,8 +33,8 @@
                 --upload-bg-color: #2a2d30;
                 --upload-border-color: #4a4d50;
                 --upload-text-color: #c1c3c6;
-                --loading-bg-rgb: 30, 30, 30; /* Cor de fundo do loading em RGB para o modo escuro */
-                --loading-text-color: #e1e3e6; /* Cor do texto do loading no modo escuro */
+                --loading-bg-rgb: 30, 30, 30;
+                --loading-text-color: #e1e3e6;
             }
         }
 
@@ -70,13 +69,37 @@
             margin-top: 0;
         }
         
+        /* --- NOVO ESTILO PARA OS BOTÕES DE MODO --- */
+        .mode-selector {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 25px;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 25px;
+        }
+        .mode-btn {
+            background: none;
+            border: 2px solid var(--upload-border-color);
+            color: var(--text-color);
+            padding: 10px 15px;
+            margin: 0 5px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+        .mode-btn.active {
+            background-color: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+            font-weight: bold;
+        }
+
         .instructions {
             text-align: left;
-            margin-top: 20px;
             margin-bottom: 30px;
-            border-top: 1px solid var(--border-color);
-            border-bottom: 1px solid var(--border-color);
-            padding: 20px 5px;
+            padding: 0 5px;
         }
         .instructions h2 {
             margin-top: 0;
@@ -90,13 +113,7 @@
         .instructions li {
             margin-bottom: 10px;
         }
-        .tips {
-            font-size: 14px;
-            text-align: center;
-            margin-top: 20px;
-            opacity: 0.8;
-        }
-
+        
         input[type="file"] {
             display: none;
         }
@@ -135,15 +152,13 @@
             cursor: not-allowed;
         }
         
-        /* --- CORREÇÃO DO LOADING OVERLAY --- */
         .loading-overlay {
             position: absolute;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            /* Usa as variáveis RGB para o fundo e a opacidade */
-            background-color: rgba(var(--loading-bg-rgb), 0.95); 
+            background-color: rgba(var(--loading-bg-rgb), 0.95);
             display: none; 
             flex-direction: column;
             justify-content: center;
@@ -151,7 +166,7 @@
             border-radius: 12px;
             opacity: 0;
             transition: opacity 0.3s;
-            z-index: 10; 
+            z-index: 10;
         }
         .loading-overlay.visible {
             display: flex;
@@ -167,9 +182,9 @@
         }
         .loading-text {
             margin-top: 20px;
-            color: var(--loading-text-color); /* Usa a nova variável para o texto do loading */
+            color: var(--loading-text-color);
             font-weight: bold;
-            text-align: center; /* Garante que o texto seja centralizado */
+            text-align: center;
         }
         @keyframes spin {
             0% { transform: rotate(0deg); }
@@ -196,21 +211,32 @@
         <div id="form-content">
             <h1>Análise Vocal com IA</h1>
 
-            <div class="instructions">
-                <h2>Como Gravar para a Melhor Análise 🎤</h2>
-                <ol>
-                    <li><strong>Encontre um lugar silencioso</strong> e use um fone com microfone para minimizar ruídos.</li>
-                    <li><strong>Escolha uma vogal</strong> (como "Ah" ou "É") e uma <strong>nota musical</strong> que seja confortável para você.</li>
-                    <li><strong>Grave a nota por 3 a 5 segundos</strong>, tentando mantê-la o mais <strong>estável e contínua</strong> possível.</li>
-                    <li><strong>Salve o arquivo</strong> (MP3, M4A ou WAV são ideais) e envie abaixo.</li>
-                </ol>
-                <p class="tips"><strong>Dica:</strong> Posicione o microfone a cerca de 15 cm da boca para evitar sons de "sopro".</p>
+            <div class="mode-selector">
+                <button class="mode-btn active" id="btn-qualidade">Análise de Qualidade</button>
+                <button class="mode-btn" id="btn-resistencia">Teste de Resistência</button>
             </div>
 
-            <form id="upload-form" action="SEU_URL_DO_WEBHOOK_AQUI" method="POST" enctype="multipart/form-data">
+            <div id="instructions-qualidade" class="instructions">
+                <h2>Como Gravar (Qualidade) 🎤</h2>
+                <ol>
+                    <li><strong>Encontre um lugar silencioso</strong> e use um fone com microfone.</li>
+                    <li><strong>Escolha uma vogal</strong> (como "Ah") e uma <strong>nota musical</strong> confortável.</li>
+                    <li><strong>Grave a nota por 3 a 5 segundos</strong>, de forma estável e contínua.</li>
+                </ol>
+            </div>
+            
+            <div id="instructions-resistencia" class="instructions" style="display: none;">
+                <h2>Como Gravar (Resistência) ⏱️</h2>
+                <ol>
+                    <li><strong>Encontre um lugar silencioso</strong> e respire fundo confortavelmente.</li>
+                    <li><strong>Escolha uma vogal</strong> (como "Ah") e uma <strong>nota musical</strong> confortável.</li>
+                    <li><strong>Grave a nota pelo MÁXIMO de tempo que conseguir</strong> com uma única respiração.</li>
+                </ol>
+            </div>
+
+            <form id="upload-form" action="https://n8n.squirrelstore.com.br/webhook/33d9de3a-2f0e-440d-b34e-c02d08c63028" method="POST" enctype="multipart/form-data">
                 <label for="audioFile" class="upload-label">Escolher Arquivo ou Gravar Áudio</label>
                 <input type="file" id="audioFile" name="audioFile" accept="audio/*" required>
-                
                 <div id="file-name">Nenhum arquivo selecionado</div>
                 <br>
                 <button type="submit" class="submit-btn" disabled>Gerar Relatório</button>
@@ -228,7 +254,27 @@
         const loadingText = document.getElementById('loading-text');
         const formContent = document.getElementById('form-content');
 
-        // Lembre-se de substituir pela URL do seu Webhook do n8n!
+        // --- LÓGICA PARA TROCAR INSTRUÇÕES ---
+        const btnQualidade = document.getElementById('btn-qualidade');
+        const btnResistencia = document.getElementById('btn-resistencia');
+        const instructionsQualidade = document.getElementById('instructions-qualidade');
+        const instructionsResistencia = document.getElementById('instructions-resistencia');
+
+        btnQualidade.addEventListener('click', () => {
+            btnQualidade.classList.add('active');
+            btnResistencia.classList.remove('active');
+            instructionsQualidade.style.display = 'block';
+            instructionsResistencia.style.display = 'none';
+        });
+
+        btnResistencia.addEventListener('click', () => {
+            btnResistencia.classList.add('active');
+            btnQualidade.classList.remove('active');
+            instructionsResistencia.style.display = 'block';
+            instructionsQualidade.style.display = 'none';
+        });
+        // --- FIM DA LÓGICA ---
+
         uploadForm.action = "https://n8n.squirrelstore.com.br/webhook/33d9de3a-2f0e-440d-b34e-c02d08c63028";
 
         fileInput.addEventListener('change', () => {
@@ -245,7 +291,7 @@
             e.preventDefault(); 
             
             const spinner = document.querySelector('.spinner');
-            spinner.style.display = 'block'; // Garante que o spinner esteja visível no início
+            spinner.style.display = 'block';
             loadingText.innerHTML = 'Analisando sua voz...<br>Isso pode levar alguns instantes.';
             loadingOverlay.classList.add('visible');
 
@@ -279,7 +325,7 @@
                     fileNameDisplay.textContent = 'Nenhum arquivo selecionado';
                     submitButton.disabled = true;
                     uploadForm.reset();
-                    spinner.style.display = 'block'; // Reseta o spinner para o próximo uso
+                    spinner.style.display = 'block';
                 }, 4000);
 
             })
@@ -293,7 +339,7 @@
                     fileNameDisplay.textContent = 'Nenhum arquivo selecionado';
                     submitButton.disabled = true;
                     uploadForm.reset();
-                    spinner.style.display = 'block'; // Reseta o spinner para o próximo uso
+                    spinner.style.display = 'block';
                 }, 5000);
             });
         });

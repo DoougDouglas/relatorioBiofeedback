@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="robots" content="noindex, nofollow">
-    <title>Análise Vocal IA</title>
+    <title>Análise Vocal IA - Treino Guiado</title>
     <style>
         :root {
             --bg-color: #f4f7f6;
@@ -13,7 +13,7 @@
             --heading-color: #1a252f;
             --primary-color: #007bff;
             --primary-color-disabled: #a0c9f5;
-            --border-color: #eee;
+            --border-color: #e1e5e8;
             --upload-bg-color: #e8eeef;
             --upload-border-color: #cddae0;
             --upload-text-color: #3b4d5a;
@@ -69,20 +69,29 @@
             margin-top: 0;
         }
         
-        /* --- NOVO ESTILO PARA OS BOTÕES DE MODO --- */
+        /* Estilos para o seletor de modo e instruções */
         .mode-selector {
-            display: flex;
-            justify-content: center;
             margin-bottom: 25px;
             border-bottom: 1px solid var(--border-color);
             padding-bottom: 25px;
+        }
+        .mode-selector h2 {
+            margin-top: 0;
+            margin-bottom: 15px;
+            font-size: 18px;
+            color: var(--heading-color);
+        }
+        .mode-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 10px;
         }
         .mode-btn {
             background: none;
             border: 2px solid var(--upload-border-color);
             color: var(--text-color);
             padding: 10px 15px;
-            margin: 0 5px;
             border-radius: 8px;
             cursor: pointer;
             font-size: 14px;
@@ -106,85 +115,71 @@
             font-size: 18px;
             color: var(--heading-color);
         }
-        .instructions ol {
-            padding-left: 20px;
-            line-height: 1.6;
-        }
-        .instructions li {
-            margin-bottom: 10px;
-        }
+        .instructions ol { padding-left: 20px; line-height: 1.6; }
+        .instructions li { margin-bottom: 10px; }
         
-        input[type="file"] {
-            display: none;
+        /* Estilos do formulário e upload */
+        .input-group {
+            margin-bottom: 20px;
+            text-align: left;
         }
+        .email-label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+        }
+        .email-input {
+            width: 100%; padding: 10px; border: 1px solid var(--upload-border-color);
+            background-color: var(--bg-color); color: var(--text-color);
+            border-radius: 8px; box-sizing: border-box;
+        }
+        input[type="file"] { display: none; }
         .upload-label {
-            display: inline-block;
-            padding: 15px 25px;
-            background-color: var(--upload-bg-color);
-            color: var(--upload-text-color);
-            border: 2px dashed var(--upload-border-color);
-            border-radius: 8px;
-            cursor: pointer;
-            transition: background-color 0.3s;
+            display: inline-block; padding: 15px 25px;
+            background-color: var(--upload-bg-color); color: var(--upload-text-color);
+            border: 2px dashed var(--upload-border-color); border-radius: 8px;
+            cursor: pointer; transition: background-color 0.3s;
         }
-        .upload-label:hover {
-            background-color: var(--bg-color);
-        }
-        #file-name {
-            margin-top: 15px;
-            font-style: italic;
-            min-height: 20px;
-        }
+        .upload-label:hover { background-color: var(--bg-color); }
+        #file-name { margin-top: 15px; font-style: italic; min-height: 20px; }
         .submit-btn {
-            background-color: var(--primary-color);
-            color: white;
-            border: none;
-            padding: 15px 30px;
-            border-radius: 8px;
-            font-size: 16px;
-            font-weight: bold;
-            cursor: pointer;
-            margin-top: 20px;
+            background-color: var(--primary-color); color: white; border: none;
+            padding: 15px 30px; border-radius: 8px; font-size: 16px;
+            font-weight: bold; cursor: pointer; margin-top: 20px;
             transition: background-color 0.3s;
         }
         .submit-btn:disabled {
-            background-color: var(--primary-color-disabled);
-            cursor: not-allowed;
+            background-color: var(--primary-color-disabled); cursor: not-allowed;
+        }
+
+        /* --- BOTÃO PARA O DASHBOARD --- */
+        .dashboard-link {
+            display: block;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid var(--border-color);
+            text-decoration: none;
+            color: var(--primary-color);
+            font-weight: 500;
         }
         
+        /* Estilos do Loading Overlay */
         .loading-overlay {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
             background-color: rgba(var(--loading-bg-rgb), 0.95);
-            display: none; 
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            border-radius: 12px;
-            opacity: 0;
-            transition: opacity 0.3s;
-            z-index: 10;
+            display: none; flex-direction: column; justify-content: center;
+            align-items: center; border-radius: 12px; opacity: 0;
+            transition: opacity 0.3s; z-index: 10;
         }
-        .loading-overlay.visible {
-            display: flex;
-            opacity: 1;
-        }
+        .loading-overlay.visible { display: flex; opacity: 1; }
         .spinner {
-            border: 5px solid #f3f3f3;
-            border-top: 5px solid var(--primary-color);
-            border-radius: 50%;
-            width: 50px;
-            height: 50px;
+            border: 5px solid #f3f3f3; border-top: 5px solid var(--primary-color);
+            border-radius: 50%; width: 50px; height: 50px;
             animation: spin 1s linear infinite;
         }
         .loading-text {
-            margin-top: 20px;
-            color: var(--loading-text-color);
-            font-weight: bold;
-            text-align: center;
+            margin-top: 20px; color: var(--loading-text-color);
+            font-weight: bold; text-align: center;
         }
         @keyframes spin {
             0% { transform: rotate(0deg); }
@@ -192,12 +187,8 @@
         }
 
         @media (max-width: 600px) {
-            .container {
-                padding: 25px;
-            }
-            h1 {
-                font-size: 24px;
-            }
+            .container { padding: 25px; }
+            h1 { font-size: 24px; }
         }
     </style>
 </head>
@@ -209,15 +200,18 @@
         </div>
 
         <div id="form-content">
-            <h1>Análise Vocal com IA</h1>
+            <h1>Treino Vocal Guiado com IA</h1>
 
             <div class="mode-selector">
-                <button class="mode-btn active" id="btn-qualidade">Análise de Qualidade</button>
-                <button class="mode-btn" id="btn-resistencia">Teste de Resistência</button>
+                <h2>1. Escolha seu exercício:</h2>
+                <div class="mode-buttons">
+                    <button class="mode-btn active" data-exercise="sustentacao_vogal">Análise de Qualidade</button>
+                    <button class="mode-btn" data-exercise="resistencia_tmf">Teste de Resistência (TMF)</button>
+                </div>
             </div>
 
-            <div id="instructions-qualidade" class="instructions">
-                <h2>Como Gravar (Qualidade) 🎤</h2>
+            <div id="instructions-sustentacao_vogal" class="instructions">
+                <h2>2. Como Gravar (Qualidade) 🎤</h2>
                 <ol>
                     <li><strong>Encontre um lugar silencioso</strong> e use um fone com microfone.</li>
                     <li><strong>Escolha uma vogal</strong> (como "Ah") e uma <strong>nota musical</strong> confortável.</li>
@@ -225,8 +219,8 @@
                 </ol>
             </div>
             
-            <div id="instructions-resistencia" class="instructions" style="display: none;">
-                <h2>Como Gravar (Resistência) ⏱️</h2>
+            <div id="instructions-resistencia_tmf" class="instructions" style="display: none;">
+                <h2>2. Como Gravar (Resistência) ⏱️</h2>
                 <ol>
                     <li><strong>Encontre um lugar silencioso</strong> e respire fundo confortavelmente.</li>
                     <li><strong>Escolha uma vogal</strong> (como "Ah") e uma <strong>nota musical</strong> confortável.</li>
@@ -235,48 +229,51 @@
             </div>
 
             <form id="upload-form" action="https://n8n.squirrelstore.com.br/webhook/33d9de3a-2f0e-440d-b34e-c02d08c63028" method="POST" enctype="multipart/form-data">
-                <label for="audioFile" class="upload-label">Escolher Arquivo ou Gravar Áudio</label>
+                <h2>3. Envie seus dados:</h2>
+                
+                <div class="input-group">
+					<label for="email" class="email-label">Seu E-mail:</label>
+					<input type="email" id="email" name="email" class="email-input" placeholder="seuemail@exemplo.com" required>
+				</div>
+
+                <input type="hidden" id="exercise_type" name="exercise_type" value="sustentacao_vogal">
+                
+				<label for="audioFile" class="upload-label">Escolher Arquivo ou Gravar Áudio</label>
                 <input type="file" id="audioFile" name="audioFile" accept="audio/*" required>
                 <div id="file-name">Nenhum arquivo selecionado</div>
                 <br>
-                <button type="submit" class="submit-btn" disabled>Gerar Relatório</button>
+                <button type="submit" class="submit-btn" disabled>Analisar Exercício</button>
             </form>
+
+            <a href="./progresso.html" class="dashboard-link">Ver meu Progresso 📈</a>
         </div>
     </div>
 
     <script>
+        // --- LÓGICA PARA TROCAR INSTRUÇÕES ---
+        const exerciseButtons = document.querySelectorAll('.mode-btn');
+        const hiddenInput = document.getElementById('exercise_type');
+        const allInstructions = document.querySelectorAll('.instructions');
+
+        exerciseButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                exerciseButtons.forEach(btn => btn.classList.remove('active'));
+                button.classList.add('active');
+                const selectedExercise = button.getAttribute('data-exercise');
+                hiddenInput.value = selectedExercise;
+                allInstructions.forEach(inst => inst.style.display = 'none');
+                document.getElementById(`instructions-${selectedExercise}`).style.display = 'block';
+            });
+        });
+        
+        // --- LÓGICA DO FORMULÁRIO E UPLOAD ---
         const fileInput = document.getElementById('audioFile');
         const fileNameDisplay = document.getElementById('file-name');
         const submitButton = document.querySelector('.submit-btn');
         const uploadForm = document.getElementById('upload-form');
-        
         const loadingOverlay = document.getElementById('loading');
         const loadingText = document.getElementById('loading-text');
-        const formContent = document.getElementById('form-content');
-
-        // --- LÓGICA PARA TROCAR INSTRUÇÕES ---
-        const btnQualidade = document.getElementById('btn-qualidade');
-        const btnResistencia = document.getElementById('btn-resistencia');
-        const instructionsQualidade = document.getElementById('instructions-qualidade');
-        const instructionsResistencia = document.getElementById('instructions-resistencia');
-
-        btnQualidade.addEventListener('click', () => {
-            btnQualidade.classList.add('active');
-            btnResistencia.classList.remove('active');
-            instructionsQualidade.style.display = 'block';
-            instructionsResistencia.style.display = 'none';
-        });
-
-        btnResistencia.addEventListener('click', () => {
-            btnResistencia.classList.add('active');
-            btnQualidade.classList.remove('active');
-            instructionsResistencia.style.display = 'block';
-            instructionsQualidade.style.display = 'none';
-        });
-        // --- FIM DA LÓGICA ---
-
-        uploadForm.action = "https://n8n.squirrelstore.com.br/webhook/33d9de3a-2f0e-440d-b34e-c02d08c63028";
-
+        
         fileInput.addEventListener('change', () => {
             if (fileInput.files.length > 0) {
                 fileNameDisplay.textContent = `Arquivo: ${fileInput.files[0].name}`;
@@ -327,7 +324,6 @@
                     uploadForm.reset();
                     spinner.style.display = 'block';
                 }, 4000);
-
             })
             .catch(error => {
                 console.error('Erro:', error);

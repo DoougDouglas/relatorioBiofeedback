@@ -5,261 +5,189 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="robots" content="noindex, nofollow">
     <title>Análise Vocal IA - Treino Guiado</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg-color: #f4f7f6;
-            --container-bg-color: #ffffff;
-            --text-color: #5a6978;
-            --heading-color: #1a252f;
-            --primary-color: #007bff;
+            --bg-color: #f0f2f5; --card-bg-color: #ffffff; --text-color: #6b7280;
+            --heading-color: #111827; --primary-color: #0d6efd; --border-color: #e5e7eb;
+            --upload-bg-color: #f9fafb; --upload-border-color: #d1d5db;
             --primary-color-disabled: #a0c9f5;
-            --border-color: #e1e5e8;
-            --upload-bg-color: #e8eeef;
-            --upload-border-color: #cddae0;
-            --upload-text-color: #3b4d5a;
-            --loading-bg-rgb: 255, 255, 255;
-            --loading-text-color: #1a252f;
+            --loading-bg-rgb: 255, 255, 255; --loading-text-color: #111827;
         }
-
         @media (prefers-color-scheme: dark) {
             :root {
-                --bg-color: #121212;
-                --container-bg-color: #1e1e1e;
-                --text-color: #a9b3be;
-                --heading-color: #e1e3e6;
-                --primary-color: #2a9dff;
-                --primary-color-disabled: #1c3d5e;
-                --border-color: #333;
-                --upload-bg-color: #2a2d30;
-                --upload-border-color: #4a4d50;
-                --upload-text-color: #c1c3c6;
-                --loading-bg-rgb: 30, 30, 30;
-                --loading-text-color: #e1e3e6;
+                --bg-color: #111827; --card-bg-color: #1f2937; --text-color: #9ca3af;
+                --heading-color: #f9fafb; --primary-color: #3b82f6; --border-color: #374151;
+                --upload-bg-color: #374151; --upload-border-color: #4b5563;
+                --primary-color-disabled: #1e40af;
+                --loading-bg-rgb: 31, 41, 55; --loading-text-color: #f9fafb;
             }
         }
-
+        * { box-sizing: border-box; }
         body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            margin: 0;
-            padding: 20px 0;
-            background-color: var(--bg-color);
-            color: var(--text-color);
-            transition: background-color 0.3s, color 0.3s;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color); color: var(--text-color);
+            margin: 0; padding: 1rem;
+            display: flex; justify-content: center; align-items: center; min-height: 100vh;
         }
-
         .container {
-            background-color: var(--container-bg-color);
-            padding: 40px;
-            border-radius: 12px;
-            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
-            text-align: center;
-            max-width: 550px;
-            width: 90%;
+            width: 100%; max-width: 640px;
+        }
+        .card {
+            background-color: var(--card-bg-color);
+            padding: 2rem; border-radius: 0.75rem;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -2px rgba(0,0,0,0.1);
+            margin-bottom: 1.5rem;
             position: relative;
             overflow: hidden;
-            transition: background-color 0.3s;
         }
-
-        h1 {
-            color: var(--heading-color);
-            margin-top: 0;
-        }
+        header { text-align: center; margin-bottom: 2rem; }
+        header h1 { color: var(--heading-color); margin: 0; font-size: 1.875rem; }
+        header p { font-size: 1.125rem; margin-top: 0.5rem; }
+        h2 { font-size: 1.25rem; color: var(--heading-color); margin-top: 0; margin-bottom: 1rem; text-align: left; }
         
-        /* Estilos para o seletor de modo e instruções */
-        .mode-selector {
-            margin-bottom: 25px;
-            border-bottom: 1px solid var(--border-color);
-            padding-bottom: 25px;
-        }
-        .mode-selector h2 {
-            margin-top: 0;
-            margin-bottom: 15px;
-            font-size: 18px;
-            color: var(--heading-color);
-        }
-        .mode-buttons {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-            gap: 10px;
-        }
+        .mode-buttons { display: flex; flex-wrap: wrap; justify-content: center; gap: 0.75rem; }
         .mode-btn {
-            background: none;
-            border: 2px solid var(--upload-border-color);
-            color: var(--text-color);
-            padding: 10px 15px;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 14px;
-            font-weight: 500;
-            transition: all 0.2s;
+            background: var(--card-bg-color); border: 1px solid var(--border-color);
+            color: var(--text-color); padding: 0.75rem 1.25rem; border-radius: 0.5rem;
+            cursor: pointer; font-size: 0.875rem; font-weight: 500; transition: all 0.2s;
         }
         .mode-btn.active {
-            background-color: var(--primary-color);
-            color: white;
-            border-color: var(--primary-color);
-            font-weight: bold;
+            background-color: var(--primary-color); color: white; border-color: var(--primary-color);
+            font-weight: 700; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
         }
-
-        .instructions {
-            text-align: left;
-            margin-bottom: 30px;
-            padding: 0 5px;
-        }
-        .instructions h2 {
-            margin-top: 0;
-            font-size: 18px;
-            color: var(--heading-color);
-        }
-        .instructions ol { padding-left: 20px; line-height: 1.6; }
-        .instructions li { margin-bottom: 10px; }
         
-        /* Estilos do formulário e upload */
-        .input-group {
-            margin-bottom: 20px;
-            text-align: left;
-        }
-        .email-label {
-            display: block;
-            margin-bottom: 5px;
-            font-weight: 500;
-        }
-        .email-input {
-            width: 100%; padding: 10px; border: 1px solid var(--upload-border-color);
-            background-color: var(--bg-color); color: var(--text-color);
-            border-radius: 8px; box-sizing: border-box;
+        .instructions { text-align: left; padding: 1.5rem; background-color: var(--bg-color); border-radius: 0.5rem; }
+        .instructions ol { padding-left: 1.25rem; margin: 0; line-height: 1.6; }
+        .instructions li { margin-bottom: 0.5rem; }
+        .instructions li:last-child { margin-bottom: 0; }
+
+        .input-group { margin-bottom: 1rem; text-align: left; }
+        .input-label { display: block; margin-bottom: 0.5rem; font-size: 0.875rem; font-weight: 500; }
+        .input-field {
+            width: 100%; padding: 0.75rem; border: 1px solid var(--border-color);
+            background-color: var(--bg-color); color: var(--heading-color);
+            border-radius: 0.5rem; font-size: 1rem;
         }
         input[type="file"] { display: none; }
         .upload-label {
-            display: inline-block; padding: 15px 25px;
-            background-color: var(--upload-bg-color); color: var(--upload-text-color);
-            border: 2px dashed var(--upload-border-color); border-radius: 8px;
-            cursor: pointer; transition: background-color 0.3s;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            padding: 2rem; background-color: var(--upload-bg-color);
+            color: var(--text-color); border: 2px dashed var(--upload-border-color);
+            border-radius: 0.5rem; cursor: pointer; transition: background-color 0.2s;
         }
         .upload-label:hover { background-color: var(--bg-color); }
-        #file-name { margin-top: 15px; font-style: italic; min-height: 20px; }
-        .submit-btn {
+        .upload-label svg { width: 48px; height: 48px; margin-bottom: 1rem; color: var(--primary-color); }
+        #file-name { margin-top: 1rem; font-style: italic; min-height: 24px; text-align: center; }
+        
+        .btn {
             background-color: var(--primary-color); color: white; border: none;
-            padding: 15px 30px; border-radius: 8px; font-size: 16px;
-            font-weight: bold; cursor: pointer; margin-top: 20px;
-            transition: background-color 0.3s;
+            padding: 0.875rem 1.5rem; border-radius: 0.5rem; font-size: 1rem;
+            font-weight: 700; cursor: pointer; transition: opacity 0.2s;
+            width: 100%;
         }
-        .submit-btn:disabled {
-            background-color: var(--primary-color-disabled); cursor: not-allowed;
-        }
-
-        /* --- BOTÃO PARA O DASHBOARD --- */
+        .btn:disabled { background-color: var(--primary-color-disabled); cursor: not-allowed; }
         .dashboard-link {
-            display: block;
-            margin-top: 30px;
-            padding-top: 20px;
-            border-top: 1px solid var(--border-color);
-            text-decoration: none;
-            color: var(--primary-color);
-            font-weight: 500;
+            display: block; margin-top: 1.5rem; text-decoration: none;
+            color: var(--primary-color); font-weight: 500; text-align: center;
         }
         
-        /* Estilos do Loading Overlay */
         .loading-overlay {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
             background-color: rgba(var(--loading-bg-rgb), 0.95);
             display: none; flex-direction: column; justify-content: center;
-            align-items: center; border-radius: 12px; opacity: 0;
+            align-items: center; border-radius: 0.75rem; opacity: 0;
             transition: opacity 0.3s; z-index: 10;
         }
         .loading-overlay.visible { display: flex; opacity: 1; }
         .spinner {
-            border: 5px solid #f3f3f3; border-top: 5px solid var(--primary-color);
+            border: 5px solid rgba(128,128,128,0.2); border-top: 5px solid var(--primary-color);
             border-radius: 50%; width: 50px; height: 50px;
             animation: spin 1s linear infinite;
         }
         .loading-text {
-            margin-top: 20px; color: var(--loading-text-color);
-            font-weight: bold; text-align: center;
+            margin-top: 1.5rem; color: var(--loading-text-color);
+            font-weight: 500; text-align: center;
         }
         @keyframes spin {
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
-
-        @media (max-width: 600px) {
-            .container { padding: 25px; }
-            h1 { font-size: 24px; }
-        }
     </style>
 </head>
 <body>
     <div class="container">
-        <div id="loading" class="loading-overlay">
-            <div class="spinner"></div>
-            <p id="loading-text" class="loading-text">Analisando sua voz...<br>Isso pode levar alguns instantes.</p>
-        </div>
+        <div class="card" id="main-card">
+            <div id="loading" class="loading-overlay">
+                <div class="spinner"></div>
+                <p id="loading-text" class="loading-text">Analisando sua voz...<br>Isso pode levar alguns instantes.</p>
+            </div>
 
-        <div id="form-content">
-            <h1>Treino Vocal Guiado com IA</h1>
+            <header>
+                <h1>Treino Vocal Guiado com IA</h1>
+                <p>Receba um feedback detalhado da sua voz em segundos.</p>
+            </header>
 
-            <div class="mode-selector">
-                <h2>1. Escolha seu exercício:</h2>
+            <div class="card">
+                <h2>1. Escolha seu exercício</h2>
                 <div class="mode-buttons">
                     <button class="mode-btn active" data-exercise="sustentacao_vogal">Análise de Qualidade</button>
                     <button class="mode-btn" data-exercise="resistencia_tmf">Teste de Resistência</button>
-                    <button class="mode-btn" data-exercise="teste_vogais">Teste de Vogais (A-E-I-O-U)</button>
+                    <button class="mode-btn" data-exercise="teste_vogais">Teste de Vogais</button>
                 </div>
             </div>
 
-            <div id="instructions-sustentacao_vogal" class="instructions">
-                <h2>2. Como Gravar (Qualidade) 🎤</h2>
-                <ol>
-                    <li><strong>Encontre um lugar silencioso</strong> e use um fone com microfone.</li>
-                    <li><strong>Escolha uma vogal</strong> (como "Ah") e uma <strong>nota musical</strong> confortável.</li>
-                    <li><strong>Grave a nota por 3 a 5 segundos</strong>, de forma estável e contínua.</li>
-                </ol>
+            <div class="card">
+                <h2>2. Siga as Instruções</h2>
+                <div id="instructions-sustentacao_vogal" class="instructions">
+                    <ol>
+                        <li>Cante uma vogal (como "Ah") em uma nota confortável.</li>
+                        <li>Sustente a nota de forma estável por 3 a 5 segundos.</li>
+                    </ol>
+                </div>
+                <div id="instructions-resistencia_tmf" class="instructions" style="display: none;">
+                    <ol>
+                        <li>Respire fundo e cante uma vogal (como "Ah") em uma nota confortável.</li>
+                        <li>Sustente a nota pelo **máximo de tempo que conseguir** em um único fôlego.</li>
+                    </ol>
+                </div>
+                <div id="instructions-teste_vogais" class="instructions" style="display: none;">
+                    <ol>
+                        <li>Cante a sequência **"A-E-I-O-U"** em uma única nota confortável.</li>
+                        <li>Sustente cada vogal por ~2 segundos, com uma pequena pausa entre elas.</li>
+                    </ol>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2>3. Envie Seus Dados</h2>
+                <form id="upload-form" action="https://n8n.squirrelstore.com.br/webhook/33d9de3a-2f0e-440d-b34e-c02d08c63028" method="POST" enctype="multipart/form-data">
+                    <div class="input-group">
+                        <label for="email" class="input-label">Seu E-mail</label>
+                        <input type="email" id="email" name="email" class="input-field" placeholder="seuemail@exemplo.com" required>
+                    </div>
+                    <input type="hidden" id="exercise_type" name="exercise_type" value="sustentacao_vogal">
+                    
+                    <label for="audioFile" class="upload-label">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+                        <span>Clique para escolher ou gravar áudio</span>
+                    </label>
+                    <input type="file" id="audioFile" name="audioFile" accept="audio/*" required>
+
+                    <div id="file-name">Nenhum arquivo selecionado</div>
+                    <button type="submit" class="btn submit-btn" disabled>Analisar Exercício</button>
+                </form>
             </div>
             
-            <div id="instructions-resistencia_tmf" class="instructions" style="display: none;">
-                <h2>2. Como Gravar (Resistência) ⏱️</h2>
-                <ol>
-                    <li><strong>Encontre um lugar silencioso</strong> e respire fundo confortavelmente.</li>
-                    <li><strong>Escolha uma vogal</strong> (como "Ah") e uma <strong>nota musical</strong> confortável.</li>
-                    <li><strong>Grave a nota pelo MÁXIMO de tempo que conseguir</strong> com uma única respiração.</li>
-                </ol>
-            </div>
-
-            <div id="instructions-teste_vogais" class="instructions" style="display: none;">
-                <h2>2. Como Gravar (Teste de Vogais) 🎨</h2>
-                <ol>
-                    <li>Escolha uma <strong>única nota musical</strong> que seja muito confortável para você.</li>
-                    <li>Grave um áudio cantando a sequência <strong>"AAAA... EEEE... IIII... OOOO... UUUU..."</strong> nesta mesma nota.</li>
-                    <li>Sustente cada vogal por cerca de <strong>2 segundos</strong> e faça uma <strong>pequena pausa</strong> para respirar entre elas.</li>
-                </ol>
-            </div>
-
-            <form id="upload-form" action="https://n8n.squirrelstore.com.br/webhook/33d9de3a-2f0e-440d-b34e-c02d08c63028" method="POST" enctype="multipart/form-data">
-                <h2>3. Envie seus dados:</h2>
-                
-                <div class="input-group">
-					<label for="email" class="email-label">Seu E-mail:</label>
-					<input type="email" id="email" name="email" class="email-input" placeholder="seuemail@exemplo.com" required>
-				</div>
-
-                <input type="hidden" id="exercise_type" name="exercise_type" value="sustentacao_vogal">
-                
-				<label for="audioFile" class="upload-label">Escolher Arquivo ou Gravar Áudio</label>
-                <input type="file" id="audioFile" name="audioFile" accept="audio/*" required>
-                <div id="file-name">Nenhum arquivo selecionado</div>
-                <br>
-                <button type="submit" class="submit-btn" disabled>Analisar Exercício</button>
-            </form>
-
-            <a href="./progresso.html" class="dashboard-link">Ver meu Progresso 📈</a>
+            <a href="./progresso.html" class="dashboard-link">Já fez uma análise? Veja seu Progresso 📈</a>
         </div>
     </div>
 
     <script>
+        // --- INÍCIO DO SCRIPT COMPLETO ---
+        
         // --- LÓGICA PARA TROCAR INSTRUÇÕES ---
         const exerciseButtons = document.querySelectorAll('.mode-btn');
         const hiddenInput = document.getElementById('exercise_type');
@@ -278,27 +206,40 @@
         
         // --- LÓGICA DO FORMULÁRIO E UPLOAD ---
         const fileInput = document.getElementById('audioFile');
+        const emailInput = document.getElementById('email');
         const fileNameDisplay = document.getElementById('file-name');
         const submitButton = document.querySelector('.submit-btn');
         const uploadForm = document.getElementById('upload-form');
         const loadingOverlay = document.getElementById('loading');
         const loadingText = document.getElementById('loading-text');
         
+        function checkFormValidity() {
+            const isEmailValid = emailInput.value.includes('@') && emailInput.value.length > 5;
+            const isFileSelected = fileInput.files.length > 0;
+            if (submitButton) {
+                submitButton.disabled = !(isEmailValid && isFileSelected);
+            }
+        }
+
         fileInput.addEventListener('change', () => {
             if (fileInput.files.length > 0) {
+                // --- CORREÇÃO ESTÁ AQUI ---
+                // Esta linha atualiza o nome do arquivo na tela
                 fileNameDisplay.textContent = `Arquivo: ${fileInput.files[0].name}`;
-                submitButton.disabled = false;
             } else {
                 fileNameDisplay.textContent = 'Nenhum arquivo selecionado';
-                submitButton.disabled = true;
             }
+            // Verifica se o formulário está válido após a mudança
+            checkFormValidity();
         });
+
+        emailInput.addEventListener('input', checkFormValidity);
         
         uploadForm.addEventListener('submit', (e) => {
             e.preventDefault(); 
             
             const spinner = document.querySelector('.spinner');
-            spinner.style.display = 'block';
+            if (spinner) spinner.style.display = 'block';
             loadingText.innerHTML = 'Analisando sua voz...<br>Isso pode levar alguns instantes.';
             loadingOverlay.classList.add('visible');
 
@@ -325,30 +266,29 @@
                 a.remove();
                 
                 loadingText.innerHTML = 'Concluído!<br>Seu relatório foi baixado.';
-                spinner.style.display = 'none';
+                if (spinner) spinner.style.display = 'none';
                 
                 setTimeout(() => {
                     loadingOverlay.classList.remove('visible');
+                    uploadForm.reset();
                     fileNameDisplay.textContent = 'Nenhum arquivo selecionado';
                     submitButton.disabled = true;
-                    uploadForm.reset();
-                    spinner.style.display = 'block';
                 }, 4000);
             })
             .catch(error => {
                 console.error('Erro:', error);
                 loadingText.innerHTML = `Ocorreu um erro.<br>Por favor, tente novamente.`;
-                spinner.style.display = 'none';
+                if (spinner) spinner.style.display = 'none';
 
                 setTimeout(() => {
                     loadingOverlay.classList.remove('visible');
+                    uploadForm.reset();
                     fileNameDisplay.textContent = 'Nenhum arquivo selecionado';
                     submitButton.disabled = true;
-                    uploadForm.reset();
-                    spinner.style.display = 'block';
                 }, 5000);
             });
         });
+        // --- FIM DO SCRIPT COMPLETO ---
     </script>
 </body>
 </html>

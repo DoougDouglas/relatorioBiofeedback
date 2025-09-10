@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard de Progresso Vocal</title>
+    <style>
+        :root {
+            --bg-color: #f4f7f6; --container-bg-color: #ffffff; --text-color: #5a6978;
+            --heading-color: #1a252f; --primary-color: #007bff; --border-color-light: #e1e5e8;
+            --color-pitch: #007bff; --color-hnr: #28a745; --color-duration: #ffc107; --color-stdev: #6c757d;
+        }
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --bg-color: #121212; --container-bg-color: #1e1e1e; --text-color: #a9b3be;
+                --heading-color: #e1e3e6; --primary-color: #2a9dff; --border-color-light: #333;
+                --color-pitch: #2a9dff; --color-hnr: #32cd32; --color-duration: #ffd700; --color-stdev: #adb5bd;
+            }
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color); color: var(--text-color); margin: 0; padding: 20px;
+        }
+        .container {
+            max-width: 900px; margin: 20px auto; padding: 30px;
+            background-color: var(--container-bg-color); border-radius: 12px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+        }
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border-color-light);
+            padding-bottom: 15px;
+            margin-bottom: 20px;
+        }
+        h1 { color: var(--heading-color); text-align: center; margin: 0; font-size: 28px; }
+        .controls { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 30px; align-items: flex-end; }
+        .input-group { flex-grow: 1; min-width: 200px; }
+        .input-label { display: block; margin-bottom: 5px; font-size: 14px; text-align: left; }
+        .input-field {
+            width: 100%; padding: 10px; border: 1px solid var(--border-color-light);
+            background-color: var(--bg-color); color: var(--text-color);
+            border-radius: 8px; font-size: 16px; box-sizing: border-box;
+        }
+        .btn {
+            background-color: var(--primary-color); color: white; border: none;
+            padding: 10px 20px; border-radius: 8px; font-size: 16px;
+            font-weight: 500; cursor: pointer; transition: background-color 0.2s;
+            height: 42px; /* Alinha altura com inputs */
+        }
+        .btn-secondary {
+            background-color: transparent;
+            color: var(--primary-color);
+            border: 1px solid var(--primary-color);
+            text-decoration: none;
+            padding: 8px 15px;
+        }
+        .btn:hover { opacity: 0.9; }
+        .chart-grid { display: grid; grid-template-columns: 1fr; gap: 40px; margin-top: 30px; }
+        .chart-wrapper { padding: 20px; border: 1px solid var(--border-color-light); border-radius: 8px; }
+        .chart-wrapper h2 { margin-top: 0; font-size: 18px; text-align: left; color: var(--heading-color); }
+        @media (min-width: 768px) { .chart-grid { grid-template-columns: repeat(2, 1fr); } }
+        #message { text-align: center; font-style: italic; min-height: 20px; }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Dashboard de Progresso 📈</h1>
+            <a href="./index.html" class="btn btn-secondary">← Voltar para Análise</a>
+        </header>
+        <div class="controls">
+            <div class="input-group">
+                <label for="email" class="input-label">E-mail do Aluno:</label>
+                <input type="email" id="email" class="input-field" placeholder="Digite o e-mail">
+            </div>
+            <div class="input-group">
+                <label for="exercise-filter" class="input-label">Filtrar por Exercício:</label>
+                <select id="exercise-filter" class="input-field">
+                    <option value="">Todos os Exercícios</option>
+                    <option value="sustentacao_vogal">Análise de Qualidade</option>
+                    <option value="escala_5_notas">Escala de 5 Notas</option>
+                    <option value="resistencia_tmf">Teste de Resistência</option>
+                </select>
+            </div>
+            <button id="search-btn" class="btn">Buscar</button>
+        </div>
+        <p id="message">Insira um e-mail para carregar os dados.</p>
+        
+        <div class="chart-grid">
+            <div class="chart-wrapper" id="pitch-chart-wrapper" style="display: none;">
+                <h2>Afinação e Estabilidade</h2>
+                <canvas id="pitchChart"></canvas>
+            </div>
+            <div class="chart-wrapper" id="hnr-chart-wrapper" style="display: none;">
+                <h2>Qualidade Vocal (HNR)</h2>
+                <canvas id="hnrChart"></canvas>
+            </div>
+            <div class="chart-wrapper" id="duration-chart-wrapper" style="display: none;">
+                <h2>Eficiência Respiratória (TMF)</h2>
+                <canvas id="durationChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const N8N_PROGRESS_WEBHOOK_URL = 'https://n8n.squirrelstore.com.br/webhook-test/6b6fc96a-b318-480a-9396-38c60f75e122'; 
+
+        const searchButton = document.getElementById('search-btn');
+        const emailInput = document.getElementById('email');
+        const exerciseFilter = document.getElementById('exercise-filter');
+        const messageDisplay = document.getElementById('message');
+        
+        const chartWrappers = {
+            pitch: document.getElementById('pitch-chart-wrapper'),
+            hnr: document.getElementById('hnr-chart-wrapper'),
+            duration: document.getElementById('duration-chart-wrapper')
+        };
+        
+        const chartCanvases = {
+            pitch: document.getElementById('pitchChart').getContext('2d'),
+            hnr: document.getElementById('hnrChart').getContext('2d'),
+            duration: document.getElementById('durationChart').getContext('2d')
+        };
+        
+        let charts = {};
+
+        async function buscarProgresso() {
+            const email = emailInput.value.trim();
+            const exercise = exerciseFilter.value;
+            if (!email) {
+                messageDisplay.textContent = "Por favor, digite um e-mail.";
+                return;
+            }
+
+            messageDisplay.textContent = "Buscando dados...";
+            
+            Object.values(charts).forEach(chart => chart.destroy());
+            Object.values(chartWrappers).forEach(wrapper => wrapper.style.display = 'none');
+
+            try {
+                const response = await fetch(`${N8N_PROGRESS_WEBHOOK_URL}?email=${encodeURIComponent(email)}&exercise=${encodeURIComponent(exercise)}`);
+                if (!response.ok) throw new Error('Falha ao buscar os dados. Verifique o e-mail.');
+                
+                const analysesData = await response.json();
+                if (analysesData.length === 0) {
+                    messageDisplay.textContent = "Nenhuma análise encontrada para esta combinação de e-mail e exercício.";
+                    return;
+                }
+
+                const labels = analysesData.map(item => new Date(item.created_at).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' }));
+                
+                Object.values(chartWrappers).forEach(wrapper => wrapper.style.display = 'block');
+
+                // GRÁFICO 1: AFINAÇÃO E ESTABILIDADE
+                charts.pitch = new Chart(chartCanvases.pitch, {
+                    type: 'line',
+                    data: {
+                        labels: labels,
+                        datasets: [
+                            { label: 'Afinação Média (Hz)', data: analysesData.map(item => item.pitch_hz), borderColor: 'var(--color-pitch)', tension: 0.1 },
+                            { label: 'Desvio Padrão (Hz)', data: analysesData.map(item => item.stdev_pitch_hz), borderColor: 'var(--color-stdev)', borderDash: [5, 5], tension: 0.1 }
+                        ]
+                    },
+                    options: { scales: { y: { title: { display: true, text: 'Frequência (Hz)' } } } }
+                });
+
+                // GRÁFICO 2: QUALIDADE VOCAL (HNR)
+                charts.hnr = new Chart(chartCanvases.hnr, {
+                    type: 'line',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            label: 'Qualidade (HNR em dB)', data: analysesData.map(item => item.hnr_db),
+                            borderColor: 'var(--color-hnr)', backgroundColor: 'rgba(40, 167, 69, 0.2)',
+                            fill: true, tension: 0.1
+                        }]
+                    },
+                    options: { scales: { y: { title: { display: true, text: 'HNR (dB)' } } } }
+                });
+
+                // GRÁFICO 3: EFICIÊNCIA RESPIRATÓRIA (TMF)
+                charts.duration = new Chart(chartCanvases.duration, {
+                    type: 'bar',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            label: 'Duração (segundos)', data: analysesData.map(item => item.duration_seconds),
+                            backgroundColor: 'var(--color-duration)'
+                        }]
+                    },
+                    options: { scales: { y: { title: { display: true, text: 'Segundos' } } } }
+                });
+
+                messageDisplay.textContent = `${analysesData.length} análises encontradas.`;
+
+            } catch (error) {
+                messageDisplay.textContent = `Erro: ${error.message}`;
+            }
+        }
+
+        searchButton.addEventListener('click', buscarProgresso);
+        emailInput.addEventListener('keyup', (event) => { if (event.key === 'Enter') buscarProgresso(); });
+    </script>
+</body>
+</html>

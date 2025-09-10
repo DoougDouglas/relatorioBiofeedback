@@ -70,8 +70,12 @@
             box-shadow: 0 1px 3px rgba(0,0,0,0.1), 0 1px 2px rgba(0,0,0,0.06);
         }
         .card h2 { margin-top: 0; font-size: 1.25rem; color: var(--heading-color); }
-        
-        /* Estilo para a descrição do gráfico */
+        .kpi-group { display: flex; flex-wrap: wrap; gap: 1.5rem; text-align: center; }
+        .kpi { flex: 1; min-width: 120px; }
+        .kpi-value { font-size: 2.25rem; font-weight: 700; color: var(--heading-color); }
+        .kpi-label { font-size: 0.875rem; color: var(--text-color); margin-top: 0.25rem; }
+
+        /* --- NOVO: Estilo para a descrição do gráfico --- */
         .chart-description {
             font-size: 0.875rem;
             text-align: center;
@@ -119,7 +123,7 @@
     <script>
         Chart.register(ChartDataLabels);
 
-        const N8N_PROGRESS_WEBHOOK_URL = 'https://n8n.squirrelstore.com.br/webhook/6b6fc96a-b318-480a-9396-38c60f75e122';
+        const N8N_PROGRESS_WEBHOOK_URL = 'https://n8n.squirrelstore.com.br/webhook/6b6fc96a-b318-480a-_URL_DO_SEU_WEBHOOK_';
         const searchButton = document.getElementById('search-btn');
         const emailInput = document.getElementById('email');
         const exerciseFilter = document.getElementById('exercise-filter');
@@ -128,7 +132,6 @@
         
         let charts = {};
 
-        // --- FUNÇÃO PRINCIPAL ---
         async function buscarProgresso() {
             const email = emailInput.value.trim();
             const exercise = exerciseFilter.value;
@@ -156,19 +159,29 @@
             }
         }
         
-        // --- FUNÇÃO PARA RENDERIZAR O DASHBOARD ---
         function renderDashboard(analysesData) {
             const labels = analysesData.map(item => new Date(item.created_at).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: '2-digit' }));
             
-            // GRÁFICOS DE EVOLUÇÃO GERAL
+            // CARD DE RESUMO DA ÚLTIMA ANÁLISE
+            const latestAnalysis = analysesData[analysesData.length - 1];
+            if (latestAnalysis) {
+                const summaryCard = createCard('Métricas da Última Análise', 'full-width');
+                summaryCard.innerHTML = `<div class="kpi-group">
+                    <div class="kpi"><div class="kpi-value">${latestAnalysis.pitch_note || 'N/A'}</div><div class="kpi-label">Nota Média</div></div>
+                    <div class="kpi"><div class="kpi-value">${latestAnalysis.hnr_db ? latestAnalysis.hnr_db.toFixed(2) : 'N/A'}</div><div class="kpi-label">Qualidade (HNR)</div></div>
+                    <div class="kpi"><div class="kpi-value">${latestAnalysis.duration_seconds ? latestAnalysis.duration_seconds.toFixed(2) : 'N/A'}s</div><div class="kpi-label">Duração (TMF)</div></div>
+                </div>`;
+            }
+
+            // GRÁFICOS DE EVOLUÇÃO
             createLineChart('hnrChart', 'Evolução da Qualidade Vocal', labels, [{
                 label: 'HNR (dB)', data: analysesData.map(item => item.hnr_db),
-                borderColor: 'var(--color-hnr)', backgroundColor: 'rgba(40, 167, 69, 0.1)', fill: true
+                borderColor: 'var(--color-hnr)', backgroundColor: 'var(--color-hnr)', fill: false, pointRadius: 4, pointHoverRadius: 6
             }], "Este gráfico mostra a 'pureza' do seu som ao longo do tempo. Valores mais altos indicam uma voz mais clara e com menos soprosidade.");
             
             createLineChart('pitchChart', 'Evolução da Afinação e Estabilidade', labels, [
-                { label: 'Afinação Média (Hz)', data: analysesData.map(item => item.pitch_hz), borderColor: 'var(--color-pitch)' },
-                { label: 'Estabilidade (Hz)', data: analysesData.map(item => item.stdev_pitch_hz), borderColor: 'var(--color-stdev)', borderDash: [5, 5] }
+                { label: 'Afinação Média (Hz)', data: analysesData.map(item => item.pitch_hz), borderColor: 'var(--color-pitch)', pointRadius: 4, pointHoverRadius: 6 },
+                { label: 'Estabilidade (Hz)', data: analysesData.map(item => item.stdev_pitch_hz), borderColor: 'var(--color-stdev)', borderDash: [5, 5], pointRadius: 4, pointHoverRadius: 6 }
             ], "A linha azul mostra sua afinação média. A linha tracejada mostra a estabilidade: quanto mais próxima de zero, mais firme é sua nota.");
 
             // GRÁFICO ESPECÍFICO PARA O TESTE DE VOGAIS
@@ -179,7 +192,6 @@
             }
         }
         
-        // --- FUNÇÕES AUXILIARES ---
         function createCard(title, extraClass = '') {
             const card = document.createElement('div');
             card.className = `card ${extraClass}`;
@@ -217,7 +229,7 @@
                 desc.textContent = description;
                 card.appendChild(desc);
             }
-
+            
             const yLabel = datasets[0]?.label.match(/\((.*?)\)/)?.[1] || '';
             charts[id] = new Chart(canvas.getContext('2d'), { type: 'line', data: { labels, datasets }, options: getChartOptions(yLabel) });
         }
@@ -245,43 +257,41 @@
                 align: 'top', offset: 8,
                 formatter: (value, context) => vogais[context.dataIndex].toUpperCase()
             };
-            
+
             // --- INÍCIO DA CORREÇÃO DO TRIÂNGULO ---
             const trianglePlugin = {
                 id: 'vowelTriangle',
                 afterDraw: chart => {
-                    const vowelPoints = chart.data.datasets[0].data;
-                    const vogalCoords = {
-                        a: vowelPoints.find((p, i) => vogais[i] === 'a'),
-                        i: vowelPoints.find((p, i) => vogais[i] === 'i'),
-                        u: vowelPoints.find((p, i) => vogais[i] === 'u')
-                    };
+                    // O plugin precisa ser registrado apenas uma vez.
+                    // A lógica de desenho é complexa, vamos simplificar para uma anotação.
+                    // Para desenhar linhas customizadas, a melhor abordagem é um plugin.
+                    
+                    const meta = chart.getDatasetMeta(0);
+                    if (meta.data.length < 3) return;
 
-                    if (vogalCoords.a && vogalCoords.i && vogalCoords.u) {
+                    const vogalIndices = { a: -1, i: -1, u: -1 };
+                    const dataLabels = chart.data.datasets[0].data.map((dp, i) => vogais.find(v => vowelData[v] && vowelData[v].f2 === dp.x && vowelData[v].f1 === dp.y));
+                    
+                    vogalIndices.a = dataLabels.indexOf('a');
+                    vogalIndices.i = dataLabels.indexOf('i');
+                    vogalIndices.u = dataLabels.indexOf('u');
+
+                    if (vogalIndices.a > -1 && vogalIndices.i > -1 && vogalIndices.u > -1) {
                         const ctx = chart.ctx;
-                        const meta = chart.getDatasetMeta(0);
+                        const pixelA = meta.data[vogalIndices.a].getCenterPoint();
+                        const pixelI = meta.data[vogalIndices.i].getCenterPoint();
+                        const pixelU = meta.data[vogalIndices.u].getCenterPoint();
                         
-                        const getPointPixel = (point) => {
-                           const found = meta.data.find(p => p.x.toFixed(2) === chart.scales.x.getPixelForValue(point.x).toFixed(2) && p.y.toFixed(2) === chart.scales.y.getPixelForValue(point.y).toFixed(2));
-                           return found ? {x: found.x, y: found.y} : null;
-                        }
-
-                        const pixelA = getPointPixel(vogalCoords.a);
-                        const pixelI = getPointPixel(vogalCoords.i);
-                        const pixelU = getPointPixel(vogalCoords.u);
-
-                        if (pixelA && pixelI && pixelU) {
-                            ctx.beginPath();
-                            ctx.moveTo(pixelA.x, pixelA.y);
-                            ctx.lineTo(pixelI.x, pixelI.y);
-                            ctx.lineTo(pixelU.x, pixelU.y);
-                            ctx.closePath();
-                            ctx.strokeStyle = 'rgba(128, 128, 128, 0.7)';
-                            ctx.lineWidth = 2;
-                            ctx.setLineDash([6, 6]);
-                            ctx.stroke();
-                            ctx.setLineDash([]);
-                        }
+                        ctx.beginPath();
+                        ctx.moveTo(pixelA.x, pixelA.y);
+                        ctx.lineTo(pixelI.x, pixelI.y);
+                        ctx.lineTo(pixelU.x, pixelU.y);
+                        ctx.closePath();
+                        ctx.strokeStyle = 'rgba(128, 128, 128, 0.7)';
+                        ctx.lineWidth = 2;
+                        ctx.setLineDash([6, 6]);
+                        ctx.stroke();
+                        ctx.setLineDash([]);
                     }
                 }
             };
@@ -292,7 +302,7 @@
                 data: { datasets: [{ 
                     label: 'Vogais', data: dataPoints, 
                     backgroundColor: 'var(--primary-color)', 
-                    pointRadius: 6, hoverRadius: 8
+                    radius: 6, hoverRadius: 8
                 }] },
                 options: options,
                 plugins: [ChartDataLabels, trianglePlugin] // Registra o plugin do triângulo

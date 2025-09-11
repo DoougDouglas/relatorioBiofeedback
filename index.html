@@ -196,7 +196,7 @@
                     </div>
                     <div class="input-group">
                         <label for="password" class="input-label">Sua Senha</label>
-                        <input type="password" id="password" name="password" class="input-field" placeholder="analisevocal" required>
+                        <input type="password" id="password" name="password" class="input-field" placeholder="Sua Senha Aqui!" required>
                     </div>
 
                     <input type="hidden" id="exercise_type" name="exercise_type" value="sustentacao_vogal">
@@ -245,14 +245,12 @@
         const loadingOverlay = document.getElementById('loading');
         const loadingText = document.getElementById('loading-text');
         
-        // Senha esperada no frontend para validação inicial
-        const EXPECTED_PASSWORD = 'analisevocal';
         const RENEW_LINK = 'https://pay.hotmart.com/K101855211U'; // Seu link de renovação
 
         function checkFormValidity() {
             const isEmailValid = emailInput.value.includes('@') && emailInput.value.length > 5;
             // A senha do cliente é validada contra o valor esperado
-            const isPasswordValid = passwordInput.value === EXPECTED_PASSWORD; 
+            const isPasswordValid = passwordInput.value.length > 0;
             const isFileSelected = fileInput.files.length > 0;
             
             if (submitButton) {
@@ -275,13 +273,6 @@
         uploadForm.addEventListener('submit', async (e) => { // Tornar a função assíncrona
             e.preventDefault(); 
             
-            // Validação da senha no cliente ANTES de enviar (primeira linha de defesa)
-            if (passwordInput.value !== EXPECTED_PASSWORD) {
-                alert('A senha digitada está incorreta. Por favor, verifique e tente novamente.');
-                // Não precisa exibir o loading, pois a validação falhou no cliente
-                return; 
-            }
-
             const spinner = document.querySelector('.spinner');
             if (spinner) spinner.style.display = 'block';
             loadingText.innerHTML = 'Analisando sua voz...<br>Isso pode levar alguns instantes.';

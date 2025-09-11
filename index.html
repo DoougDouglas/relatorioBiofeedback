@@ -88,6 +88,18 @@
             font-weight: 700; cursor: pointer; transition: opacity 0.2s;
             width: 100%;
         }
+        .btn-link {
+            display: inline-block;
+            background-color: var(--primary-color); 
+            color: white; 
+            text-decoration: none;
+            padding: 0.875rem 1.5rem; 
+            border-radius: 0.5rem; 
+            font-size: 1rem;
+            font-weight: 700; 
+            transition: opacity 0.2s;
+            margin-top: 10px;
+        }
         .btn:disabled { background-color: var(--primary-color-disabled); cursor: not-allowed; }
         .dashboard-link {
             display: block; margin-top: 1.5rem; text-decoration: none;
@@ -110,6 +122,13 @@
         .loading-text {
             margin-top: 1.5rem; color: var(--loading-text-color);
             font-weight: 500; text-align: center;
+        }
+        .renew-links {
+            margin-top: 1.5rem;
+            text-align: center;
+        }
+        .renew-links a {
+            margin: 5px;
         }
         @keyframes spin {
             0% { transform: rotate(0deg); }
@@ -177,7 +196,7 @@
                     </div>
                     <div class="input-group">
                         <label for="password" class="input-label">Sua Senha</label>
-                        <input type="password" id="password" name="password" class="input-field" placeholder="Sua Senha Aqui!!!" required>
+                        <input type="password" id="password" name="password" class="input-field" placeholder="analisevocal" required>
                     </div>
 
                     <input type="hidden" id="exercise_type" name="exercise_type" value="sustentacao_vogal">
@@ -227,12 +246,13 @@
         const loadingText = document.getElementById('loading-text');
         
         // Senha esperada no frontend para validação inicial
+        const EXPECTED_PASSWORD = 'analisevocal';
         const RENEW_LINK = 'https://pay.hotmart.com/K101855211U'; // Seu link de renovação
 
         function checkFormValidity() {
             const isEmailValid = emailInput.value.includes('@') && emailInput.value.length > 5;
             // A senha do cliente é validada contra o valor esperado
-            const isPasswordValid = passwordInput.value.length > 0; 
+            const isPasswordValid = passwordInput.value === EXPECTED_PASSWORD; 
             const isFileSelected = fileInput.files.length > 0;
             
             if (submitButton) {
@@ -255,11 +275,18 @@
         uploadForm.addEventListener('submit', async (e) => { // Tornar a função assíncrona
             e.preventDefault(); 
             
+            // Validação da senha no cliente ANTES de enviar (primeira linha de defesa)
+            if (passwordInput.value !== EXPECTED_PASSWORD) {
+                alert('A senha digitada está incorreta. Por favor, verifique e tente novamente.');
+                // Não precisa exibir o loading, pois a validação falhou no cliente
+                return; 
+            }
+
             const spinner = document.querySelector('.spinner');
             if (spinner) spinner.style.display = 'block';
             loadingText.innerHTML = 'Analisando sua voz...<br>Isso pode levar alguns instantes.';
             loadingOverlay.classList.add('visible');
-			loadingOverlay.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            loadingOverlay.scrollIntoView({ behavior: 'smooth', block: 'center' });
 
             const formData = new FormData(uploadForm);
 
@@ -273,7 +300,6 @@
                     // Tenta ler a resposta como JSON se não for OK
                     let errorData;
                     try {
-                        // Usamos response.text() primeiro para evitar erro se não for JSON
                         const text = await response.text(); 
                         errorData = JSON.parse(text);
                     } catch (parseError) {
@@ -317,19 +343,30 @@
                 
                 let errorMessage = 'Ocorreu um erro desconhecido.<br>Por favor, tente novamente.';
                 
+                // --- INÍCIO DA MODIFICAÇÃO AQUI ---
                 // Verifica se o erro possui o formato de JSON de erro que esperamos do n8n
                 if (error && error.status === 'error' && error.message) {
                     errorMessage = error.message;
 
-                    if (error.code === 'SUBSCRIPTION_EXPIRED' && error.renew_link) {
-                        errorMessage += `<br><br><a href="${error.renew_link}" target="_blank" style="color: var(--primary-color); text-decoration: underline; font-weight: bold;">Clique aqui para renovar sua assinatura.</a>`;
+                    // Se o erro for de assinatura vencida, lista os links de renovação
+                    if (error.code === 'SUBSCRIPTION_EXPIRED' && Array.isArray(error.renew_links)) {
+                        let linksHtml = '<p>Sua assinatura está vencida. Por favor, renove seu acesso:</p>';
+                        linksHtml += '<div class="renew-links">';
+                        error.renew_links.forEach(link => {
+                            linksHtml += `<a href="${link.url}" target="_blank" class="btn-link">${link.name}</a>`;
+                        });
+                        linksHtml += '</div>';
+                        errorMessage = linksHtml;
+                        // Não esconde o spinner imediatamente, pois a mensagem é um tipo de carregamento
+                        // progressLoadingOverlay.classList.add('visible');
+                        // progressSpinner.style.display = 'none';
+                        // A mensagem de erro será o HTML dos links
                     } else if (error.code === 'AUTH_FAILED') {
                          errorMessage = 'A senha informada está incorreta. Por favor, verifique e tente novamente.';
                          // Opcional: Você pode querer resetar apenas a senha aqui
-                         // passwordInput.value = ''; 
+                         // passwordInput.value = '';
                     }
                 } else if (typeof error === 'string') {
-                    // Se o erro for uma string simples
                     errorMessage = error;
                 }
                 
@@ -338,18 +375,12 @@
 
                 setTimeout(() => {
                     loadingOverlay.classList.remove('visible');
-                    // Em caso de erro, você pode querer manter os campos preenchidos
-                    // para o usuário corrigir, especialmente para erros de senha/email.
-                    // uploadForm.reset(); // Descomente se quiser resetar TUDO no erro
-                    // fileNameDisplay.textContent = 'Nenhum arquivo selecionado'; // Descomente se quiser resetar o nome do arquivo
-                    submitButton.disabled = false; // Permite tentar novamente após a correção
+                    submitButton.disabled = false;
                 }, 5000);
             }
         });
 
-        // Chamada inicial para verificar a validade do formulário ao carregar a página
         checkFormValidity();
-        // --- FIM DO SCRIPT COMPLETO ---
     </script>
 </body>
 </html>

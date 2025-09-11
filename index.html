@@ -136,6 +136,7 @@
                     <button class="mode-btn active" data-exercise="sustentacao_vogal">Análise de Qualidade</button>
                     <button class="mode-btn" data-exercise="resistencia_tmf">Teste de Resistência</button>
                     <button class="mode-btn" data-exercise="teste_vogais">Teste de Vogais</button>
+                    <button class="mode-btn" data-exercise="analise_extensao">Extensão Vocal</button>
                 </div>
             </div>
 
@@ -157,6 +158,12 @@
                     <ol>
                         <li>Cante a sequência **"A-E-I-O-U"** em uma única nota confortável.</li>
                         <li>Sustente cada vogal por ~2 segundos, com uma pequena pausa entre elas.</li>
+                    </ol>
+                </div>
+                <div id="instructions-analise_extensao" class="instructions" style="display: none;">
+                    <ol>
+                        <li>Comece com a nota mais grave que conseguir cantar confortavelmente.</li>
+                        <li>Suba uma escala contínua até a nota mais aguda que conseguir, sem gritar.</li>
                     </ol>
                 </div>
             </div>
@@ -223,13 +230,10 @@
 
         fileInput.addEventListener('change', () => {
             if (fileInput.files.length > 0) {
-                // --- CORREÇÃO ESTÁ AQUI ---
-                // Esta linha atualiza o nome do arquivo na tela
                 fileNameDisplay.textContent = `Arquivo: ${fileInput.files[0].name}`;
             } else {
                 fileNameDisplay.textContent = 'Nenhum arquivo selecionado';
             }
-            // Verifica se o formulário está válido após a mudança
             checkFormValidity();
         });
 

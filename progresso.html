@@ -15,6 +15,9 @@
             --heading-color: #111827; --primary-color: #0d6efd; --border-color: #e5e7eb;
             --color-pitch: #0d6efd; --color-hnr: #10b981; --color-duration: #f59e0b; --color-stdev: #6c757d;
             --chart-grid-color: rgba(0, 0, 0, 0.05);
+            /* Variáveis para o overlay */
+            --loading-bg-rgb: 255, 255, 255;
+            --loading-text-color: #111827;
         }
         @media (prefers-color-scheme: dark) {
             :root {
@@ -22,6 +25,9 @@
                 --heading-color: #f9fafb; --primary-color: #3b82f6; --border-color: #374151;
                 --color-pitch: #3b82f6; --color-hnr: #34d399; --color-duration: #fbbF59; --color-stdev: #9ca3af;
                 --chart-grid-color: rgba(255, 255, 255, 0.1);
+                /* Variáveis para o overlay no dark mode */
+                --loading-bg-rgb: 31, 41, 55;
+                --loading-text-color: #f9fafb;
             }
         }
         * { box-sizing: border-box; }
@@ -104,6 +110,45 @@
         .kpi-label { font-size: 0.875rem; color: var(--text-color); margin-top: 0.25rem; }
         .chart-description { font-size: 0.875rem; text-align: center; margin-top: 1rem; opacity: 0.9; }
 
+        /* Estilos para o overlay de carregamento/mensagem */
+        .loading-overlay {
+            position: fixed; /* Mude para fixed para cobrir a tela inteira */
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(var(--loading-bg-rgb), 0.95);
+            display: none; /* Inicia oculto */
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+            transition: opacity 0.3s;
+            z-index: 1000; /* Garante que fique acima de tudo */
+        }
+        .loading-overlay.visible {
+            display: flex;
+            opacity: 1;
+        }
+        .spinner {
+            border: 5px solid rgba(128,128,128,0.2);
+            border-top: 5px solid var(--primary-color);
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+        }
+        .loading-text {
+            margin-top: 1.5rem;
+            color: var(--loading-text-color);
+            font-weight: 500;
+            text-align: center;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
         /* Media Query para telas maiores (desktop) */
         @media (min-width: 820px) {
             header { flex-direction: row; text-align: left; }
@@ -122,6 +167,10 @@
             <a href="./index.html" class="btn btn-secondary">← Fazer Nova Análise</a>
         </header>
 
+        <div id="progress-loading" class="loading-overlay">
+            <div class="spinner"></div>
+            <p id="progress-loading-text" class="loading-text">Buscando histórico...</p>
+        </div>
         <div class="controls">
             <div class="input-group">
                 <label for="email" class="input-label">E-mail do Aluno:</label>
@@ -154,44 +203,117 @@
         const dashboardContent = document.getElementById('dashboard-content');
         let charts = {};
 
+        // NOVAS VARIÁVEIS PARA O OVERLAY
+        const progressLoadingOverlay = document.getElementById('progress-loading');
+        const progressLoadingText = document.getElementById('progress-loading-text');
+        const progressSpinner = progressLoadingOverlay.querySelector('.spinner');
+
         async function buscarProgresso() {
             const email = emailInput.value.trim();
             const exercise = exerciseFilter.value;
-            if (!email) { messageDisplay.textContent = "Por favor, digite um e-mail."; return; }
+            
+            // Validação inicial antes de mostrar o overlay
+            if (!email) { 
+                messageDisplay.textContent = "Por favor, digite um e-mail."; // Mensagem rápida, sem pop-up
+                return; 
+            }
 
-            messageDisplay.textContent = "Buscando histórico...";
+            // Exibe o overlay de carregamento
+            progressSpinner.style.display = 'block'; // Garante que o spinner esteja visível
+            progressLoadingText.innerHTML = "Buscando histórico...";
+            progressLoadingOverlay.classList.add('visible');
+            progressLoadingOverlay.scrollIntoView({ behavior: 'smooth', block: 'center' }); // Rola para o overlay
+
             dashboardContent.innerHTML = '';
             Object.values(charts).forEach(chart => chart.destroy());
+            charts = {}; // Limpar referência aos gráficos destruídos
 
             try {
                 const response = await fetch(`${N8N_PROGRESS_WEBHOOK_URL}?email=${encodeURIComponent(email)}&exercise=${encodeURIComponent(exercise)}`);
-                if (!response.ok) throw new Error('Falha ao buscar os dados. Verifique o e-mail.');
                 
+                if (!response.ok) {
+                    let errorData;
+                    try {
+                        errorData = await response.json(); // Tenta ler a resposta como JSON
+                    } catch (e) {
+                        // Se não for JSON ou falhar, cria um erro genérico
+                        errorData = { 
+                            status: "error",
+                            message: `Falha na rede ou no servidor. Código: ${response.status}`,
+                            code: "UNKNOWN_ERROR" 
+                        };
+                    }
+
+                    if (response.status === 401 && errorData.code === 'SUBSCRIPTION_EXPIRED') {
+                        let errorMessage = errorData.message;
+                        if (errorData.renew_link) {
+                            errorMessage += `<br><br><a href="${errorData.renew_link}" target="_blank" style="color: var(--primary-color); text-decoration: underline; font-weight: bold;">Clique aqui para renovar sua assinatura.</a>`;
+                        }
+                        progressSpinner.style.display = 'none'; // Oculta o spinner em caso de erro
+                        progressLoadingText.innerHTML = errorMessage;
+                        
+                        setTimeout(() => {
+                            progressLoadingOverlay.classList.remove('visible'); // Esconde o overlay após 5 segundos
+                        }, 5000);
+                        return; 
+                    } else {
+                        throw new Error(errorData.message || `Falha ao buscar os dados. Status: ${response.status}`);
+                    }
+                }
+
                 const allAnalyses = await response.json();
+                
                 if (allAnalyses.length === 0) {
-                    messageDisplay.textContent = "Nenhuma análise encontrada para esta combinação.";
+                    progressSpinner.style.display = 'none'; // Oculta o spinner
+                    progressLoadingText.textContent = "Nenhuma análise encontrada para esta combinação.";
+                    setTimeout(() => {
+                        progressLoadingOverlay.classList.remove('visible');
+                    }, 3000);
                     return;
                 }
 
-                messageDisplay.textContent = `Exibindo ${allAnalyses.length} análises encontradas.`;
+                progressLoadingText.textContent = `Exibindo ${allAnalyses.length} análises encontradas.`;
+                progressSpinner.style.display = 'none'; // Oculta o spinner após sucesso
+                
+                // Remove o overlay imediatamente se houver dados para exibir
+                progressLoadingOverlay.classList.remove('visible'); 
+                
                 renderDashboard(allAnalyses);
 
             } catch (error) {
-                messageDisplay.textContent = `Erro: ${error.message}`;
+                console.error("Erro ao buscar progresso:", error);
+                progressSpinner.style.display = 'none'; // Oculta o spinner em caso de erro
+                
+                let errorMessage = `Erro: ${error.message}`;
+                // Se o erro for uma instância de Error (como o throw new Error() faria)
+                // e a mensagem for a de falha de rede/servidor (que não queremos mostrar ao usuário)
+                if (error.message.includes('Falha na rede ou no servidor')) {
+                     errorMessage = 'Ocorreu um erro ao conectar ao servidor. Por favor, tente novamente mais tarde.';
+                }
+
+                progressLoadingText.innerHTML = errorMessage;
+                
+                setTimeout(() => {
+                    progressLoadingOverlay.classList.remove('visible');
+                }, 5000); // Esconde o overlay após 5 segundos em caso de erro
             }
         }
         
         function renderDashboard(analysesData) {
             const labels = analysesData.map(item => new Date(item.created_at).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: '2-digit' }));
             
+            // Limpa o conteúdo existente do dashboard antes de renderizar
+            dashboardContent.innerHTML = ''; 
+
             const latestAnalysis = analysesData[analysesData.length - 1];
             if (latestAnalysis) {
                 const summaryCard = createCard('Métricas da Última Análise', 'full-width');
-                summaryCard.innerHTML = `<div class="kpi-group">
+                summaryCard.innerHTML += `<div class="kpi-group">
                     <div class="kpi"><div class="kpi-value">${latestAnalysis.pitch_note || 'N/A'}</div><div class="kpi-label">Nota Média</div></div>
                     <div class="kpi"><div class="kpi-value">${latestAnalysis.hnr_db ? latestAnalysis.hnr_db.toFixed(2) : 'N/A'}</div><div class="kpi-label">Qualidade (HNR)</div></div>
                     <div class="kpi"><div class="kpi-value">${latestAnalysis.duration_seconds ? latestAnalysis.duration_seconds.toFixed(2) : 'N/A'}s</div><div class="kpi-label">Duração (TMF)</div></div>
                 </div>`;
+                dashboardContent.appendChild(summaryCard); // Adiciona o card ao dashboardContent
             }
 
             createLineChart('hnrChart', 'Evolução da Qualidade Vocal', labels, [{
@@ -217,7 +339,7 @@
             const cardTitle = document.createElement('h2');
             cardTitle.textContent = title;
             card.appendChild(cardTitle);
-            dashboardContent.appendChild(card);
+            // dashboardContent.appendChild(card); // REMOVIDO: será adicionado no renderDashboard
             return card;
         }
 
@@ -242,7 +364,6 @@
         function createLineChart(id, title, labels, datasets, description) {
             const card = createCard(title);
             const chartContainer = document.createElement('div');
-            // Adiciona uma classe ao container do canvas para controle
             chartContainer.style.position = 'relative';
             chartContainer.style.height = '300px';
             const canvas = document.createElement('canvas');
@@ -256,6 +377,7 @@
                 card.appendChild(desc);
             }
             
+            dashboardContent.appendChild(card); // Adiciona o card ao dashboardContent
             const yLabel = datasets[0]?.label.match(/\((.*?)\)/)?.[1] || '';
             charts[id] = new Chart(canvas.getContext('2d'), { type: 'line', data: { labels, datasets }, options: getChartOptions(yLabel) });
         }
@@ -273,6 +395,8 @@
             desc.className = 'chart-description';
             desc.innerHTML = "Este mapa mostra a clareza da sua dicção. Quanto maior o <b>triângulo tracejado</b>, mais distintas são suas vogais.";
             card.appendChild(desc);
+            
+            dashboardContent.appendChild(card); // Adiciona o card ao dashboardContent
             
             const vogais = ['a', 'e', 'i', 'o', 'u'];
             const dataPoints = vogais.map((v) => {

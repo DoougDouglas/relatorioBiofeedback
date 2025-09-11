@@ -259,6 +259,7 @@
             if (spinner) spinner.style.display = 'block';
             loadingText.innerHTML = 'Analisando sua voz...<br>Isso pode levar alguns instantes.';
             loadingOverlay.classList.add('visible');
+			loadingOverlay.scrollIntoView({ behavior: 'smooth', block: 'center' });
 
             const formData = new FormData(uploadForm);
 
@@ -316,7 +317,7 @@
                 
                 let errorMessage = 'Ocorreu um erro desconhecido.<br>Por favor, tente novamente.';
                 
-               
+                // Verifica se o erro possui o formato de JSON de erro que esperamos do n8n
                 if (error && error.status === 'error' && error.message) {
                     errorMessage = error.message;
 
@@ -324,6 +325,8 @@
                         errorMessage += `<br><br><a href="${error.renew_link}" target="_blank" style="color: var(--primary-color); text-decoration: underline; font-weight: bold;">Clique aqui para renovar sua assinatura.</a>`;
                     } else if (error.code === 'AUTH_FAILED') {
                          errorMessage = 'A senha informada está incorreta. Por favor, verifique e tente novamente.';
+                         // Opcional: Você pode querer resetar apenas a senha aqui
+                         // passwordInput.value = ''; 
                     }
                 } else if (typeof error === 'string') {
                     // Se o erro for uma string simples

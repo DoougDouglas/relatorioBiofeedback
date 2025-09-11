@@ -90,6 +90,20 @@
             font-size: 0.875rem;
         }
         .btn:hover { opacity: 0.85; }
+        /* Adicione o estilo para o novo botão de link, similar ao .btn */
+        .btn-link {
+            display: inline-block;
+            background-color: var(--primary-color); 
+            color: white; 
+            text-decoration: none;
+            padding: 0.875rem 1.5rem; 
+            border-radius: 0.5rem; 
+            font-size: 1rem;
+            font-weight: 700; 
+            transition: opacity 0.2s;
+            margin-top: 10px;
+        }
+
         #message { text-align: center; margin-top: 1.5rem; min-height: 24px; font-weight: 500; }
         .dashboard-grid {
             display: grid;
@@ -144,6 +158,14 @@
             font-weight: 500;
             text-align: center;
         }
+        .renew-links { /* Estilo para o container dos links de renovação */
+            margin-top: 1.5rem;
+            text-align: center;
+        }
+        .renew-links a { /* Estilo para cada link dentro do container */
+            margin: 5px; /* Espaçamento entre os botões */
+        }
+
         @keyframes spin {
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
@@ -244,17 +266,19 @@
                         };
                     }
 
-                    if (response.status === 401 && errorData.code === 'SUBSCRIPTION_EXPIRED') {
-                        let errorMessage = errorData.message;
-                        if (errorData.renew_link) {
-                            errorMessage += `<br><br><a href="${errorData.renew_link}" target="_blank" style="color: var(--primary-color); text-decoration: underline; font-weight: bold;">Clique aqui para renovar sua assinatura.</a>`;
-                        }
+                    if (errorData.code === 'SUBSCRIPTION_EXPIRED' && Array.isArray(errorData.renew_links)) {
+                        let linksHtml = `<p>${errorData.message}</p>`;
+                        linksHtml += '<div class="renew-links">';
+                        errorData.renew_links.forEach(link => {
+                            linksHtml += `<a href="${link.url}" target="_blank" class="btn-link">${link.name}</a>`;
+                        });
+                        linksHtml += '</div>';
                         progressSpinner.style.display = 'none'; // Oculta o spinner em caso de erro
-                        progressLoadingText.innerHTML = errorMessage;
+                        progressLoadingText.innerHTML = linksHtml; // Exibe os links no overlay
                         
                         setTimeout(() => {
-                            progressLoadingOverlay.classList.remove('visible'); // Esconde o overlay após 5 segundos
-                        }, 5000);
+                            progressLoadingOverlay.classList.remove('visible');
+                        }, 10000); // 10 segundos para o usuário ver e clicar nos links
                         return; 
                     } else {
                         throw new Error(errorData.message || `Falha ao buscar os dados. Status: ${response.status}`);
@@ -285,10 +309,8 @@
                 progressSpinner.style.display = 'none'; // Oculta o spinner em caso de erro
                 
                 let errorMessage = `Erro: ${error.message}`;
-                // Se o erro for uma instância de Error (como o throw new Error() faria)
-                // e a mensagem for a de falha de rede/servidor (que não queremos mostrar ao usuário)
                 if (error.message.includes('Falha na rede ou no servidor')) {
-                     errorMessage = 'Ocorreu um erro ao conectar ao servidor. Por favor, tente novamente mais tarde.';
+                        errorMessage = 'Ocorreu um erro ao conectar ao servidor. Por favor, tente novamente mais tarde.';
                 }
 
                 progressLoadingText.innerHTML = errorMessage;
@@ -339,7 +361,6 @@
             const cardTitle = document.createElement('h2');
             cardTitle.textContent = title;
             card.appendChild(cardTitle);
-            // dashboardContent.appendChild(card); // REMOVIDO: será adicionado no renderDashboard
             return card;
         }
 

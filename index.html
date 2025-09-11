@@ -175,6 +175,11 @@
                         <label for="email" class="input-label">Seu E-mail</label>
                         <input type="email" id="email" name="email" class="input-field" placeholder="seuemail@exemplo.com" required>
                     </div>
+                    <div class="input-group">
+                        <label for="password" class="input-label">Sua Senha</label>
+                        <input type="password" id="password" name="password" class="input-field" placeholder="Sua Senha Aqui!!!" required>
+                    </div>
+
                     <input type="hidden" id="exercise_type" name="exercise_type" value="sustentacao_vogal">
                     
                     <label for="audioFile" class="upload-label">
@@ -214,17 +219,24 @@
         // --- LÓGICA DO FORMULÁRIO E UPLOAD ---
         const fileInput = document.getElementById('audioFile');
         const emailInput = document.getElementById('email');
+        const passwordInput = document.getElementById('password'); 
         const fileNameDisplay = document.getElementById('file-name');
         const submitButton = document.querySelector('.submit-btn');
         const uploadForm = document.getElementById('upload-form');
         const loadingOverlay = document.getElementById('loading');
         const loadingText = document.getElementById('loading-text');
         
+        // Senha esperada no frontend para validação inicial
+        const RENEW_LINK = 'https://pay.hotmart.com/K101855211U'; // Seu link de renovação
+
         function checkFormValidity() {
             const isEmailValid = emailInput.value.includes('@') && emailInput.value.length > 5;
+            // A senha do cliente é validada contra o valor esperado
+            const isPasswordValid = passwordInput.value.length > 0; 
             const isFileSelected = fileInput.files.length > 0;
+            
             if (submitButton) {
-                submitButton.disabled = !(isEmailValid && isFileSelected);
+                submitButton.disabled = !(isEmailValid && isPasswordValid && isFileSelected);
             }
         }
 
@@ -238,8 +250,9 @@
         });
 
         emailInput.addEventListener('input', checkFormValidity);
+        passwordInput.addEventListener('input', checkFormValidity); 
         
-        uploadForm.addEventListener('submit', (e) => {
+        uploadForm.addEventListener('submit', async (e) => { // Tornar a função assíncrona
             e.preventDefault(); 
             
             const spinner = document.querySelector('.spinner');
@@ -248,22 +261,41 @@
             loadingOverlay.classList.add('visible');
 
             const formData = new FormData(uploadForm);
-            fetch(uploadForm.action, {
-                method: 'POST',
-                body: formData
-            })
-            .then(response => {
+
+            try {
+                const response = await fetch(uploadForm.action, { // Usar await
+                    method: 'POST',
+                    body: formData
+                });
+
                 if (!response.ok) {
-                    return response.text().then(text => { throw new Error(text || 'Falha na rede ou no servidor.') });
+                    // Tenta ler a resposta como JSON se não for OK
+                    let errorData;
+                    try {
+                        // Usamos response.text() primeiro para evitar erro se não for JSON
+                        const text = await response.text(); 
+                        errorData = JSON.parse(text);
+                    } catch (parseError) {
+                        // Se não for JSON ou o parse falhar, criamos um erro genérico
+                        errorData = { 
+                            status: "error",
+                            message: `Falha na rede ou no servidor. Código: ${response.status}`,
+                            code: "UNKNOWN_ERROR" 
+                        };
+                    }
+                    
+                    // Lançar o erro personalizado para ser pego pelo catch
+                    throw errorData; 
                 }
-                return response.blob(); 
-            })
-            .then(blob => { 
+
+                // Se a resposta for OK, assume que é um blob (PDF) e procede com o download
+                const blob = await response.blob(); 
+                
                 const url = window.URL.createObjectURL(blob);
                 const a = document.createElement('a');
                 a.style.display = 'none';
                 a.href = url;
-                a.download = 'relatorio-vocal.pdf'; 
+                a.download = `relatorio-vocal-${emailInput.value}.pdf`; // Nome do arquivo mais personalizado
                 document.body.appendChild(a);
                 a.click();
                 window.URL.revokeObjectURL(url);
@@ -278,20 +310,42 @@
                     fileNameDisplay.textContent = 'Nenhum arquivo selecionado';
                     submitButton.disabled = true;
                 }, 4000);
-            })
-            .catch(error => {
-                console.error('Erro:', error);
-                loadingText.innerHTML = `Ocorreu um erro.<br>Por favor, tente novamente.`;
+
+            } catch (error) {
+                console.error('Erro no fetch:', error);
+                
+                let errorMessage = 'Ocorreu um erro desconhecido.<br>Por favor, tente novamente.';
+                
+               
+                if (error && error.status === 'error' && error.message) {
+                    errorMessage = error.message;
+
+                    if (error.code === 'SUBSCRIPTION_EXPIRED' && error.renew_link) {
+                        errorMessage += `<br><br><a href="${error.renew_link}" target="_blank" style="color: var(--primary-color); text-decoration: underline; font-weight: bold;">Clique aqui para renovar sua assinatura.</a>`;
+                    } else if (error.code === 'AUTH_FAILED') {
+                         errorMessage = 'A senha informada está incorreta. Por favor, verifique e tente novamente.';
+                    }
+                } else if (typeof error === 'string') {
+                    // Se o erro for uma string simples
+                    errorMessage = error;
+                }
+                
+                loadingText.innerHTML = `${errorMessage}`;
                 if (spinner) spinner.style.display = 'none';
 
                 setTimeout(() => {
                     loadingOverlay.classList.remove('visible');
-                    uploadForm.reset();
-                    fileNameDisplay.textContent = 'Nenhum arquivo selecionado';
-                    submitButton.disabled = true;
+                    // Em caso de erro, você pode querer manter os campos preenchidos
+                    // para o usuário corrigir, especialmente para erros de senha/email.
+                    // uploadForm.reset(); // Descomente se quiser resetar TUDO no erro
+                    // fileNameDisplay.textContent = 'Nenhum arquivo selecionado'; // Descomente se quiser resetar o nome do arquivo
+                    submitButton.disabled = false; // Permite tentar novamente após a correção
                 }, 5000);
-            });
+            }
         });
+
+        // Chamada inicial para verificar a validade do formulário ao carregar a página
+        checkFormValidity();
         // --- FIM DO SCRIPT COMPLETO ---
     </script>
 </body>

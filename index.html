@@ -52,6 +52,8 @@
             background: var(--card-bg-color); border: 1px solid var(--border-color);
             color: var(--text-color); padding: 0.75rem 1.25rem; border-radius: 0.5rem;
             cursor: pointer; font-size: 0.875rem; font-weight: 500; transition: all 0.2s;
+            flex-grow: 1; /* Permite que os botões se expandam para preencher o espaço */
+            text-align: center;
         }
         .mode-btn.active {
             background-color: var(--primary-color); color: white; border-color: var(--primary-color);
@@ -140,55 +142,45 @@
         <div class="card" id="main-card">
             <div id="loading" class="loading-overlay">
                 <div class="spinner"></div>
-                <p id="loading-text" class="loading-text">Analisando sua voz...<br>Isso pode levar alguns instantes.</p>
+                <p id="loading-text" class="loading-text">Analisando sua voz...<br>Aguarde enquanto geramos seu relatório vocal detalhado.</p>
             </div>
 
             <header>
                 <h1>Treino Vocal Guiado com IA</h1>
-                <p>Receba um feedback detalhado da sua voz em segundos.</p>
+                <p>Receba um feedback detalhado e educativo da sua voz em segundos.</p>
             </header>
 
             <div class="card">
-                <h2>1. Escolha seu exercício</h2>
+                <h2>1. Escolha seu Foco de Treino</h2>
                 <div class="mode-buttons">
-                    <button class="mode-btn active" data-exercise="sustentacao_vogal">Análise de Qualidade</button>
-                    <button class="mode-btn" data-exercise="resistencia_tmf">Teste de Resistência</button>
-                    <button class="mode-btn" data-exercise="teste_vogais">Teste de Vogais</button>
-                    <button class="mode-btn" data-exercise="analise_extensao">Extensão Vocal</button>
-                    <button class="mode-btn" data-exercise="palestrante_leitura">Comunicação / Palestrante</button>
+                    <button class="mode-btn active" data-exercise="saude_qualidade">🎙️ Saúde e Qualidade Vocal</button>
+                    <button class="mode-btn" data-exercise="extensao_afinacao">🎶 Extensão e Afinação</button>
+                    <button class="mode-btn" data-exercise="comunicacao_entonação">🗣️ Comunicação e Entonação</button>
                 </div>
             </div>
 
             <div class="card">
-                <h2>2. Siga as Instruções</h2>
-                <div id="instructions-sustentacao_vogal" class="instructions">
+                <h2>2. Instruções de Gravação</h2>
+                <div id="instructions-saude_qualidade" class="instructions">
                     <ol>
-                        <li>Cante uma vogal (como "Ah") em uma nota confortável.</li>
-                        <li>Sustente a nota de forma estável por **5 segundos** (Mínimo para análise de Jitter/Shimmer).</li>
+                        <li>**Respire fundo** usando o diafragma.</li>
+                        <li>Cante a vogal **"Ah"** (como em "mãe") em uma nota confortável, com um volume moderado.</li>
+                        <li>Sustente a nota de forma **reta e firme** pelo **máximo de tempo** que conseguir em um único fôlego.</li>
+                        <li>**Foco:** Medir sua resistência respiratória e a clareza da sua voz (sem sopro).</li>
                     </ol>
                 </div>
-                <div id="instructions-resistencia_tmf" class="instructions" style="display: none;">
+                <div id="instructions-extensao_afinacao" class="instructions" style="display: none;">
                     <ol>
-                        <li>Respire fundo e cante uma vogal (como "Ah") em uma nota confortável.</li>
-                        <li>Sustente a nota pelo **máximo de tempo que conseguir** em um único fôlego.</li>
+                        <li>**Alcance:** Comece com a nota mais grave que conseguir e suba uma escala até a mais aguda, sem forçar ou gritar.</li>
+                        <li>**Clareza:** Após a escala, cante a sequência **"A-E-I-O-U"** lentamente na sua melhor nota, garantindo que cada vogal seja distinta.</li>
+                        <li>**Foco:** Medir seu alcance total e a precisão da sua articulação (formantes).</li>
                     </ol>
                 </div>
-                <div id="instructions-teste_vogais" class="instructions" style="display: none;">
+                <div id="instructions-comunicacao_entonação" class="instructions" style="display: none;">
                     <ol>
-                        <li>Cante a sequência **"A-E-I-O-U"** em uma única nota confortável.</li>
-                        <li>Sustente cada vogal por ~2 segundos, com uma pequena pausa entre elas.</li>
-                    </ol>
-                </div>
-                <div id="instructions-analise_extensao" class="instructions" style="display: none;">
-                    <ol>
-                        <li>Comece com a nota mais grave que conseguir cantar confortavelmente.</li>
-                        <li>Suba uma escala contínua até a nota mais aguda que conseguir, sem gritar.</li>
-                    </ol>
-                </div>
-                <div id="instructions-palestrante_leitura" class="instructions" style="display: none;">
-                    <ol>
-                        <li>Leia um trecho de um texto (aproximadamente 10-15 segundos de fala).</li>
-                        <li>Foque em sua **entonação** e na **projeção** habitual para a comunicação.</li>
+                        <li>**Leia em voz alta** um trecho de um texto (aproximadamente 10 a 15 segundos).</li>
+                        <li>Foque em uma **entonação natural e expressiva** e na **projeção** do seu volume habitual de fala.</li>
+                        <li>**Foco:** Medir a variação de tom (entonação) e o volume (projeção) da sua voz falada.</li>
                     </ol>
                 </div>
             </div>
@@ -205,7 +197,7 @@
                         <input type="password" id="password" name="password" class="input-field" placeholder="Sua Senha Aqui!" required>
                     </div>
 
-                    <input type="hidden" id="exercise_type" name="exercise_type" value="sustentacao_vogal">
+                    <input type="hidden" id="exercise_type" name="exercise_type" value="saude_qualidade">
                     
                     <label for="audioFile" class="upload-label">
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
@@ -237,7 +229,11 @@
                 const selectedExercise = button.getAttribute('data-exercise');
                 hiddenInput.value = selectedExercise;
                 allInstructions.forEach(inst => inst.style.display = 'none');
-                document.getElementById(`instructions-${selectedExercise}`).style.display = 'block';
+                
+                const instructionsElement = document.getElementById(`instructions-${selectedExercise}`);
+                if (instructionsElement) {
+                    instructionsElement.style.display = 'block';
+                }
             });
         });
         
@@ -281,7 +277,6 @@
             const spinner = document.querySelector('.spinner');
             if (spinner) spinner.style.display = 'block';
             
-            // Texto de carregamento mais específico para a análise
             loadingText.innerHTML = 'Analisando sua voz...<br>Aguarde enquanto geramos seu relatório vocal detalhado.';
             
             loadingOverlay.classList.add('visible');
@@ -338,7 +333,6 @@
                 
                 let errorMessage = 'Ocorreu um erro desconhecido.<br>Por favor, tente novamente.';
                 
-                // Lógica de tratamento de erro (mantida do seu original)
                 if (error && error.status === 'error' && error.message) {
                     errorMessage = error.message;
 
@@ -363,7 +357,7 @@
                 setTimeout(() => {
                     loadingOverlay.classList.remove('visible');
                     submitButton.disabled = false;
-                }, 7000); // Aumentei o tempo para 7s para dar tempo de ler mensagens de erro importantes
+                }, 7000);
             }
         });
 

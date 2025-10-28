@@ -155,6 +155,7 @@
                     <button class="mode-btn" data-exercise="resistencia_tmf">Teste de Resistência</button>
                     <button class="mode-btn" data-exercise="teste_vogais">Teste de Vogais</button>
                     <button class="mode-btn" data-exercise="analise_extensao">Extensão Vocal</button>
+                    <button class="mode-btn" data-exercise="palestrante_leitura">Comunicação / Palestrante</button>
                 </div>
             </div>
 
@@ -163,7 +164,7 @@
                 <div id="instructions-sustentacao_vogal" class="instructions">
                     <ol>
                         <li>Cante uma vogal (como "Ah") em uma nota confortável.</li>
-                        <li>Sustente a nota de forma estável por 3 a 5 segundos.</li>
+                        <li>Sustente a nota de forma estável por **5 segundos** (Mínimo para análise de Jitter/Shimmer).</li>
                     </ol>
                 </div>
                 <div id="instructions-resistencia_tmf" class="instructions" style="display: none;">
@@ -182,6 +183,12 @@
                     <ol>
                         <li>Comece com a nota mais grave que conseguir cantar confortavelmente.</li>
                         <li>Suba uma escala contínua até a nota mais aguda que conseguir, sem gritar.</li>
+                    </ol>
+                </div>
+                <div id="instructions-palestrante_leitura" class="instructions" style="display: none;">
+                    <ol>
+                        <li>Leia um trecho de um texto (aproximadamente 10-15 segundos de fala).</li>
+                        <li>Foque em sua **entonação** e na **projeção** habitual para a comunicação.</li>
                     </ol>
                 </div>
             </div>
@@ -248,7 +255,6 @@
 
         function checkFormValidity() {
             const isEmailValid = emailInput.value.includes('@') && emailInput.value.length > 5;
-            // A senha do cliente é validada contra o valor esperado
             const isPasswordValid = passwordInput.value.length > 0;
             const isFileSelected = fileInput.files.length > 0;
             
@@ -269,56 +275,55 @@
         emailInput.addEventListener('input', checkFormValidity);
         passwordInput.addEventListener('input', checkFormValidity); 
         
-        uploadForm.addEventListener('submit', async (e) => { // Tornar a função assíncrona
+        uploadForm.addEventListener('submit', async (e) => {
             e.preventDefault(); 
             
             const spinner = document.querySelector('.spinner');
             if (spinner) spinner.style.display = 'block';
-            loadingText.innerHTML = 'Analisando sua voz...<br>Isso pode levar alguns instantes.';
+            
+            // Texto de carregamento mais específico para a análise
+            loadingText.innerHTML = 'Analisando sua voz...<br>Aguarde enquanto geramos seu relatório vocal detalhado.';
+            
             loadingOverlay.classList.add('visible');
             loadingOverlay.scrollIntoView({ behavior: 'smooth', block: 'center' });
 
             const formData = new FormData(uploadForm);
 
             try {
-                const response = await fetch(uploadForm.action, { // Usar await
+                const response = await fetch(uploadForm.action, {
                     method: 'POST',
                     body: formData
                 });
 
                 if (!response.ok) {
-                    // Tenta ler a resposta como JSON se não for OK
                     let errorData;
                     try {
                         const text = await response.text(); 
                         errorData = JSON.parse(text);
                     } catch (parseError) {
-                        // Se não for JSON ou o parse falhar, criamos um erro genérico
                         errorData = { 
                             status: "error",
                             message: `Falha na rede ou no servidor. Código: ${response.status}`,
                             code: "UNKNOWN_ERROR" 
                         };
                     }
-                    
-                    // Lançar o erro personalizado para ser pego pelo catch
                     throw errorData; 
                 }
 
-                // Se a resposta for OK, assume que é um blob (PDF) e procede com o download
+                // Se a resposta for OK, procede com o download do PDF
                 const blob = await response.blob(); 
                 
                 const url = window.URL.createObjectURL(blob);
                 const a = document.createElement('a');
                 a.style.display = 'none';
                 a.href = url;
-                a.download = `relatorio-vocal-${emailInput.value}.pdf`; // Nome do arquivo mais personalizado
+                a.download = `relatorio-vocal-${emailInput.value}.pdf`;
                 document.body.appendChild(a);
                 a.click();
                 window.URL.revokeObjectURL(url);
                 a.remove();
                 
-                loadingText.innerHTML = 'Concluído!<br>Seu relatório foi baixado.';
+                loadingText.innerHTML = 'Concluído! 🎉<br>Seu relatório foi baixado com sucesso.';
                 if (spinner) spinner.style.display = 'none';
                 
                 setTimeout(() => {
@@ -333,12 +338,10 @@
                 
                 let errorMessage = 'Ocorreu um erro desconhecido.<br>Por favor, tente novamente.';
                 
-                // --- INÍCIO DA MODIFICAÇÃO AQUI ---
-                // Verifica se o erro possui o formato de JSON de erro que esperamos do n8n
+                // Lógica de tratamento de erro (mantida do seu original)
                 if (error && error.status === 'error' && error.message) {
                     errorMessage = error.message;
 
-                    // Se o erro for de assinatura vencida, lista os links de renovação
                     if (error.code === 'SUBSCRIPTION_EXPIRED' && Array.isArray(error.renew_links)) {
                         let linksHtml = '<p>Sua assinatura está vencida. Por favor, renove seu acesso:</p>';
                         linksHtml += '<div class="renew-links">';
@@ -347,14 +350,8 @@
                         });
                         linksHtml += '</div>';
                         errorMessage = linksHtml;
-                        // Não esconde o spinner imediatamente, pois a mensagem é um tipo de carregamento
-                        // progressLoadingOverlay.classList.add('visible');
-                        // progressSpinner.style.display = 'none';
-                        // A mensagem de erro será o HTML dos links
                     } else if (error.code === 'AUTH_FAILED') {
-                         errorMessage = 'A senha informada está incorreta. Por favor, verifique e tente novamente.';
-                         // Opcional: Você pode querer resetar apenas a senha aqui
-                         // passwordInput.value = '';
+                        errorMessage = 'A senha informada está incorreta. Por favor, verifique e tente novamente.';
                     }
                 } else if (typeof error === 'string') {
                     errorMessage = error;
@@ -366,7 +363,7 @@
                 setTimeout(() => {
                     loadingOverlay.classList.remove('visible');
                     submitButton.disabled = false;
-                }, 5000);
+                }, 7000); // Aumentei o tempo para 7s para dar tempo de ler mensagens de erro importantes
             }
         });
 
@@ -374,8 +371,3 @@
     </script>
 </body>
 </html>
-
-
-
-
-
